@@ -13,10 +13,19 @@ export const GET: RequestHandler = async ({ url }) => {
     }
 
     try {
+        // const result = await query(
+        //     `SELECT id, room_id, user_id 
+        //     , start_time AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Seoul' AS start_time
+        //     , end_time AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Seoul' AS end_time
+        //     FROM reservation 
+        //     WHERE DATE(start_time) = $1 
+        //     ORDER BY room_id, start_time`,
+        //     [inquery_date]
+        // );
         const result = await query(
             `SELECT id, room_id, user_id 
-            , start_time AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Seoul' AS start_time
-            , end_time AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Seoul' AS end_time
+            , start_time 
+            , end_time 
             FROM reservation 
             WHERE DATE(start_time) = $1 
             ORDER BY room_id, start_time`,
