@@ -254,18 +254,20 @@
 							on:click={() => handleClick(room.id, hour)}
 							disabled={isPast(hour)}
 						>
-							{hour}
+						{hour}
+							<!-- {isMine(room.id, hour) ? '예약': hour} -->
 						</button>
 						<div class="btn-info">
 							{#each reservations.filter((r) => r.room_id === room.id) as r}
-								<!-- {@const utc = new Date(r.start_time)}
+								{@const utc = new Date(r.start_time)}
 							{@const kst = new Date(utc.getTime() + 9 * 60 * 60 * 1000)}
-							{#if utc.getHours() === hour}
+							{#if kst.getHours() === hour}
 								<div>
-									{utc.toISOString().slice(11, 16)} → {kst.toISOString().slice(11, 16)}<br />
-									({kst.toISOString().split('T')[0]})
+									예약
+									<!-- {utc.toISOString().slice(11, 16)} → {kst.toISOString().slice(11, 16)}<br />
+									({kst.toISOString().split('T')[0]}) -->
 								</div>
-							{/if} -->
+							{/if}
 							{/each}
 						</div>
 					</div>
