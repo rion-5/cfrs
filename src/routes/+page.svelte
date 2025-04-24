@@ -2,7 +2,12 @@
 <script lang='ts'>
 	import { auth, logout } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
+	import { get } from 'svelte/store';
 	import { onMount } from 'svelte';
+
+
+	let userId: string | undefined; //2024987654
+	let userName: string | undefined;
 
   const handleSelect = (type: 'STUDY' | 'READING' | 'LECTURE') => {
   goto(`/${type.toLowerCase()}`);
@@ -13,15 +18,19 @@
 	}
 
 	onMount(() => {
+		const $auth = get(auth);
 		if (!$auth.isLoggedIn) {
 			goto('/login');
+		}else {
+			userId = $auth.id_no;
+			userName = $auth.user_name;
 		}
 	});
 </script>
 
 <main class="mx-auto max-w-md space-y-8 p-6 text-center text-neutral-800">
 	<div class="flex items-center justify-between p-4">
-		<div class="text-lg font-semibold">이상근님</div>
+		<div class="text-lg font-semibold">{userName} 님</div>
 		<button class="text-sm text-red-500 hover:underline" on:click={handleLogout}>로그아웃</button>
 	</div>
 

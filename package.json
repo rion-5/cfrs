@@ -45,6 +45,7 @@
 	"dependencies": {
 		"@types/pg": "^8.11.12",
 		"date-fns": "^4.1.0",
+		"dayjs": "^1.11.13",
 		"dotenv": "^16.5.0",
 		"pg": "^8.14.1"
 	}
