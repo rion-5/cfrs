@@ -72,6 +72,21 @@
 		// 퇴실 처리 API 호출 예정
 		alert(`퇴실 처리: ${reservationId}`);
 	}
+	async function handleCancel(reservationId: number) {
+	if (confirm('예약을 취소하시겠습니까?')) {
+		// fetch(`/api/reservations/${reservationId}`, {
+		// 	method: 'DELETE'
+		// }).then(() => fetchReservations());
+		await fetch('/api/reservations', {
+					method: 'DELETE',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ id: reservationId, user_id: userId })
+				});
+
+				await fetchReservations();; // UI 갱신
+	}
+}
+
 </script>
 
 <main class="mx-auto max-w-md space-y-8 p-6 text-center text-neutral-800">
@@ -128,7 +143,15 @@
 							</div> -->
 							<div class="flex items-center space-x-2">
 								{#if getStatus(r) === '예약'}
+								<div class="flex items-center gap-2">
 									<span class="font-medium text-blue-500">예약중</span>
+									<button
+										class="rounded border border-gray-300 px-2 py-1 text-xs text-gray-600 hover:bg-gray-100"
+										on:click={() => handleCancel(r.id)}
+									>
+										취소
+									</button>
+								</div>
 								{:else if getStatus(r) === '퇴실'}
 								<div class="flex items-center gap-2">
 									<span class="text-orange-500 font-semibold">사용중</span>
