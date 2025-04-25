@@ -14,7 +14,7 @@ export const GET: RequestHandler = async ({ url }) => {
 
     try {
         const result = await query(
-            `SELECT id, name, type from room where type = $1 `, 
+            `SELECT id, name, type, capacity from room where type = $1 order by name`, 
             [type]
         );
         return json(result);

@@ -53,7 +53,19 @@
 	onMount(() => {
 		const $auth = get(auth);
 		if (!$auth.isLoggedIn) {
-			goto('/login?redirect=/study'); //로그인 후 다시 돌아오게
+			// goto('/login?redirect=/study'); //로그인 후 다시 돌아오게
+
+			userId = 'A011982';
+			userName = '이상근';
+			const now = dayjs().tz('Asia/Seoul');
+			currentHour = now.hour();
+
+			// 9시부터 22시까지
+			availableHours = Array.from({ length: 14 }, (_, i) => i + 9);
+
+			fetchData();
+
+
 		} else {
 			userId = $auth.id_no;
 			userName = $auth.user_name;
@@ -238,7 +250,7 @@
 
 	{#each rooms as room}
 		<div class="room">
-			<h3>{room.name}</h3>
+			<h3>{room.name}  ({room.capacity}인실)</h3>
 			<div>
 				{#each HOURS as hour}
 					<div style="display: inline-block; text-align: center;">
@@ -254,20 +266,20 @@
 							on:click={() => handleClick(room.id, hour)}
 							disabled={isPast(hour)}
 						>
-						{hour}
+							{hour}
 							<!-- {isMine(room.id, hour) ? '예약': hour} -->
 						</button>
 						<div class="btn-info">
 							{#each reservations.filter((r) => r.room_id === room.id) as r}
 								{@const utc = new Date(r.start_time)}
-							{@const kst = new Date(utc.getTime() + 9 * 60 * 60 * 1000)}
-							{#if kst.getHours() === hour}
-								<div>
-									예약
-									<!-- {utc.toISOString().slice(11, 16)} → {kst.toISOString().slice(11, 16)}<br />
+								{@const kst = new Date(utc.getTime() + 9 * 60 * 60 * 1000)}
+								{#if kst.getHours() === hour}
+									<div>
+										예약
+										<!-- {utc.toISOString().slice(11, 16)} → {kst.toISOString().slice(11, 16)}<br />
 									({kst.toISOString().split('T')[0]}) -->
-								</div>
-							{/if}
+									</div>
+								{/if}
 							{/each}
 						</div>
 					</div>
