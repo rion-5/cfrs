@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { auth } from '$lib/stores/auth';
+	import { logout,auth } from '$lib/stores/auth';
 	import { get } from 'svelte/store';
 	import { goto } from '$app/navigation';
 
@@ -13,6 +13,11 @@
 
 	const totalSeats = 60;
 	const seats = Array.from({ length: totalSeats }, (_, i) => i + 1);
+
+
+	function goHome() {
+		goto('/');
+	}
 
 	// 10개씩 끊어서 배열로 나누기
 	const chunkedSeats: number[][] = [];
@@ -99,10 +104,20 @@
 			fetchSeatStatus();
 		}
 	});
+
+	function handleLogout() {
+		logout();
+		goto('/login');
+	}
 </script>
 
 <main class="mx-auto max-w-screen-md space-y-8 px-4 py-6 text-center text-neutral-800 sm:px-6 lg:px-8">
-	<h1 class="text-center text-2xl font-bold">열람실 이용 등록</h1>
+		<!-- 상단 네비게이션 -->
+		<div class="flex items-center justify-between px-2 sm:px-4">
+			<button on:click={goHome} class="text-sm text-blue-600 hover:underline">← Home</button>
+			<button class="text-sm text-red-500 hover:underline" on:click={handleLogout}>로그아웃</button>
+		</div>
+	<h1 class="text-center text-2xl font-bold">도담 📖열람실 이용 등록</h1>
 
 	<div class="flex flex-wrap gap-2">
 		{#each seats as seat}

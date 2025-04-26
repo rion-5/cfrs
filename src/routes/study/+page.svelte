@@ -195,7 +195,7 @@
 		<button class="text-sm text-red-500 hover:underline" on:click={handleLogout}>로그아웃</button>
 	</div>
 
-	<h1 class="mb-4 text-2xl font-bold">💬 IC-PBL 토론실 예약</h1>
+	<h1 class="mb-4 text-2xl font-bold">IC-PBL 💬토론실 예약</h1>
 
 	<!-- 날짜 선택 탭 -->
 	<div class="mb-4 flex flex-wrap justify-center gap-2">
