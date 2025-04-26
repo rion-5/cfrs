@@ -126,7 +126,7 @@
 			class="flex aspect-square flex-col items-center justify-center rounded-xl border border-gray-300 p-2 text-sm font-semibold text-red-800 shadow-sm hover:bg-yellow-100"
 			on:click={() => handleSelect('LECTURE')}
 		>
-			<span class="text-2xl">🏫</span>
+			<span class="text-2xl">🎓</span>
 			<span class="mt-1 text-center text-xs leading-tight">강의실</span>
 		</button>
 	</div>

@@ -101,43 +101,23 @@
 	});
 </script>
 
-<main class="mx-auto max-w-md space-y-6 p-4 text-center">
-	<h1 class="text-2xl font-bold">열람실 이용 등록</h1>
-	<div class="grid grid-cols-6 gap-2">
-		<!-- {#each seats as seat}
+<main class="mx-auto max-w-screen-md space-y-8 px-4 py-6 text-center text-neutral-800 sm:px-6 lg:px-8">
+	<h1 class="text-center text-2xl font-bold">열람실 이용 등록</h1>
+
+	<div class="flex flex-wrap gap-2">
+		{#each seats as seat}
 			<button
 				class="h-10 w-10 rounded-md font-bold text-white
 					{mySeat === seat
-					? 'bg-red-500'
-					: usedSeats.includes(seat)
-						? 'cursor-not-allowed bg-gray-400'
-						: 'bg-green-500 hover:bg-green-600'}"
+						? 'bg-red-500'
+						: usedSeats.includes(seat)
+							? 'cursor-not-allowed bg-gray-400'
+							: 'bg-green-500 hover:bg-green-600'}"
 				on:click={() => handleSeatClick(seat)}
 				disabled={usedSeats.includes(seat) && mySeat !== seat}
 			>
 				{seat}
 			</button>
-		{/each} -->
-		{#each chunkedSeats as row}
-			<div class="seat-row" style="display: flex; gap: 4px; margin-bottom: 8px;">
-				{#each row as seat}
-					<button class="seat-button">{seat}</button>
-				{/each}
-			</div>
 		{/each}
 	</div>
 </main>
-
-<style>
-	.seat-button {
-		width: 36px;
-		height: 36px;
-		border: 1px solid #ccc;
-		border-radius: 6px;
-		background-color: #e0ffe0; /* 기본: 사용 가능 (녹색) */
-	}
-
-	.seat-row {
-		justify-content: center;
-	}
-</style>

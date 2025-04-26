@@ -1,187 +1,139 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import type { Room } from '$lib/types/Room';
-	import type { Reservation } from '$lib/types/Reservation';
+  export let seats = Array.from({ length: 60 }, (_, i) => i + 1);
+  export let usedSeats: number[] = [];
+  export let mySeat: number | null = null;
 
-	let date = new Date().toISOString().split('T')[0];
-	let rooms: Room[] = [];
-	let reservations: Reservation[] = [];
-	let userId = '2023001234';
 
-	const HOURS = Array.from({ length: 14 }, (_, i) => i + 9);
+	const seatPositions: Record<number, { x: number; y: number }> = {
+  // 오른쪽부터 왼쪽으로 내려오는 좌석
+  1: { x: 400, y: 50 },
+  2: { x: 350, y: 50 },
+  3: { x: 300, y: 50 },
+  4: { x: 250, y: 50 },
+  5: { x: 200, y: 50 },
 
-	const dates = Array.from({ length: 3 }, (_, i) => {
-		const d = new Date();
-		d.setDate(d.getDate() + i);
-		return d.toISOString().split('T')[0];
-	});
+  6: { x: 400, y: 100 },
+  7: { x: 350, y: 100 },
+  8: { x: 300, y: 100 },
+  9: { x: 250, y: 100 },
+  10: { x: 200, y: 100 },
 
-	async function fetchData() {
-		const roomRes = await fetch('/api/rooms?type=STUDY');
-		rooms = await roomRes.json();
+  11: { x: 400, y: 150 },
+  12: { x: 350, y: 150 },
+  13: { x: 300, y: 150 },
+  14: { x: 250, y: 150 },
+  15: { x: 200, y: 150 },
 
-		const resvRes = await fetch(`/api/reservations?inquery_date=${date}`);
-		reservations = await resvRes.json();
-	}
+  16: { x: 400, y: 200 },
+  17: { x: 350, y: 200 },
+  18: { x: 300, y: 200 },
+  19: { x: 250, y: 200 },
+  20: { x: 200, y: 200 },
 
-	onMount(() => {
-		fetchData();
-	});
+  21: { x: 400, y: 250 },
+  22: { x: 350, y: 250 },
+  23: { x: 300, y: 250 },
+  24: { x: 250, y: 250 },
+  25: { x: 200, y: 250 },
 
-	// function isReserved(roomId: number, hour: number): boolean {
-	// 	return reservations.some((r) => {
-	// 		if (r.room_id !== roomId) return false;
-	// 		const startDateUTC = new Date(r.start_time);
-	// 		const startDateKST = new Date(startDateUTC.getTime() + 9 * 60 * 60 * 1000);
-	// 		const kstDateStr = startDateKST.toISOString().split('T')[0];
-	// 		return kstDateStr === date && startDateKST.getHours() === hour;
-	// 	});
-	// }
+  26: { x: 400, y: 300 },
+  27: { x: 350, y: 300 },
+  28: { x: 300, y: 300 },
+  29: { x: 250, y: 300 },
+  30: { x: 200, y: 300 },
 
-	function isReserved(roomId: number, hour: number): boolean {
-		return reservations.some((r) => {
-			if (r.room_id !== roomId) return false;
+  31: { x: 400, y: 350 },
+  32: { x: 350, y: 350 },
+  33: { x: 300, y: 350 },
+  34: { x: 250, y: 350 },
+  35: { x: 200, y: 350 },
 
-			//const startDateUTC = new Date(r.start_time);
-			// const startDateKST = new Date(startDateUTC.getTime() + 9 * 60 * 60 * 1000);
+  36: { x: 400, y: 400 },
+  37: { x: 350, y: 400 },
+  38: { x: 300, y: 400 },
 
-			const startDateKST = new Date(r.start_time);
-			const kstHour = startDateKST.getHours();
-			const kstDateStr = startDateKST.toISOString().split('T')[0];
+  39: { x: 100, y: 500 },
+  40: { x: 150, y: 500 },
+  41: { x: 100, y: 550 },
+  42: { x: 150, y: 550 },
+  43: { x: 100, y: 600 },
+  44: { x: 150, y: 600 },
+  45: { x: 100, y: 650 },
+  46: { x: 150, y: 650 },
+  47: { x: 100, y: 700 },
+  48: { x: 150, y: 700 },
+  49: { x: 100, y: 750 },
+  50: { x: 150, y: 750 },
 
-			//console.log(`startDateUTC ${startDateUTC}   startDateKST ${startDateKST}`);
+  51: { x: 0, y: 500 },
+  52: { x: 0, y: 550 },
+  53: { x: 0, y: 600 },
+  54: { x: 0, y: 650 },
+  55: { x: 0, y: 700 },
+  56: { x: 0, y: 750 },
+  57: { x: 0, y: 800 },
+  58: { x: 0, y: 850 },
+  59: { x: 0, y: 900 },
+  60: { x: 0, y: 950 },
+};
 
-			if (kstDateStr === date && kstHour === hour) {
-				// console.log(`[DEBUG] room ${roomId}, 예약 matched at ${kstHour}시 (버튼 hour=${hour})`);
-				return true;
-			} else {
-				// console.log(`[SKIP] room ${roomId}, KST=${kstHour}시, 버튼 hour=${hour}`);
-				return false;
-			}
-		});
-	}
+  function selectSeat(seat: number) {
+    if (usedSeats.includes(seat) && mySeat !== seat) return;
+    if (mySeat === seat) {
+      mySeat = null; // 이미 선택한 거 클릭하면 취소
+    } else {
+      mySeat = seat;
+    }
+  }
 
-	function isMine(roomId: number, hour: number): boolean {
-		return reservations.some((r) => {
-			const startDateUTC = new Date(r.start_time);
-			const startDateKST = new Date(startDateUTC.getTime() + 9 * 60 * 60 * 1000);
-			const kstDateStr = startDateKST.toISOString().split('T')[0];
-			return (
-				r.room_id === roomId &&
-				kstDateStr === date &&
-				startDateKST.getHours() === hour &&
-				r.user_id === userId
-			);
-		});
-	}
+  function handleKeydown(event: KeyboardEvent, seat: number) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      selectSeat(seat);
+    }
+  }
+	function getX(seat: number) {
+  return seatPositions[seat]?.x ?? 0;
+}
 
-	function handleClick(roomId: number, hour: number) {
-		const mine = isMine(roomId, hour);
-		const reserved = isReserved(roomId, hour);
-		if (mine) {
-			if (confirm(`${hour}시 예약을 취소하시겠습니까?`)) {
-				console.log('예약 취소');
-			}
-		} else if (!reserved) {
-			const nextHour = hour + 1;
-			const nextAvailable = !isReserved(roomId, nextHour);
-			const msg =
-				`${hour}시에 예약되었습니다.` + (nextAvailable ? ` ${nextHour}시도 예약하시겠습니까?` : '');
-			if (confirm(msg)) {
-				console.log(`${hour}시 예약`);
-				if (nextAvailable && confirm(`${nextHour}시도 예약할까요?`)) {
-					console.log(`${nextHour}시도 예약`);
-				}
-			}
-		}
-	}
+function getY(seat: number) {
+  return seatPositions[seat]?.y ?? 0;
+}
+
 </script>
 
-<h1>토론실 예약</h1>
+<svg viewBox="0 0 500 800" class="w-full h-auto">
+  <text x="250" y="780" text-anchor="middle" font-size="20">입구</text>
 
-<div class="date-tab">
-	{#each dates as d}
-		<button
-			class:active={d === date}
-			on:click={() => {
-				date = d;
-				fetchData();
-			}}
-		>
-			{d}
-		</button>
-	{/each}
-</div>
-
-{#each rooms as room}
-	<div class="room">
-		<h3>{room.name}</h3>
-		<div>
-			{#each HOURS as hour}
-				<div style="display: inline-block; text-align: center;">
-					<button
-						class="btn {isMine(room.id, hour)
-							? 'mine'
-							: isReserved(room.id, hour)
-								? 'reserved'
-								: 'available'}"
-						on:click={() => handleClick(room.id, hour)}
-					>
-						{hour}
-					</button>
-					<div class="btn-info">
-						{#each reservations.filter((r) => r.room_id === room.id) as r}{/each}
-					</div>
-				</div>
-			{/each}
-		</div>
-	</div>
-{/each}
+  {#each seats as seat (seat)}
+    <foreignObject
+      x={getX(seat)}
+      y={getY(seat)}
+      width="40"
+      height="40"
+      style="overflow: visible;"
+    >
+      <button
+        type="button"
+        tabindex="0"
+        class="w-10 h-10 rounded-md font-bold text-white text-sm flex items-center justify-center
+          {mySeat === seat
+            ? 'bg-red-500'
+            : usedSeats.includes(seat)
+              ? 'bg-gray-400 cursor-not-allowed'
+              : 'bg-green-500 hover:bg-green-600'}"
+        on:click={() => selectSeat(seat)}
+        on:keydown={(e) => handleKeydown(e, seat)}
+        disabled={usedSeats.includes(seat) && mySeat !== seat}
+      >
+        {seat}
+      </button>
+    </foreignObject>
+  {/each}
+</svg>
 
 <style>
-	.date-tab {
-		display: flex;
-		gap: 1rem;
-		margin-bottom: 1rem;
-	}
-	.date-tab button {
-		padding: 0.5rem 1rem;
-		border-radius: 0.5rem;
-		font-weight: bold;
-		cursor: pointer;
-		border: 2px solid transparent;
-	}
-	.date-tab button.active {
-		border-color: #3b82f6;
-		background-color: #dbeafe;
-	}
-
-	.room {
-		margin-bottom: 2rem;
-	}
-	.btn {
-		margin: 0.2rem;
-		padding: 0.6rem;
-		width: 2.5rem;
-		border-radius: 0.5rem;
-		text-align: center;
-		font-weight: bold;
-		color: white;
-		border: none;
-	}
-	.btn.available {
-		background-color: #3b82f6;
-	}
-	.btn.mine {
-		background-color: #ef4444;
-	}
-	.btn.reserved {
-		background-color: #d1d5db;
-	}
-	.btn-info {
-		font-size: 0.6rem;
-		color: #6b7280;
-		text-align: center;
-		margin-top: 0.2rem;
-	}
+  button:focus {
+    outline: 2px solid blue;
+  }
 </style>
+
