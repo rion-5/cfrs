@@ -1,99 +1,55 @@
+<!-- src/routes/study/+page.svelte -->
 <script lang="ts">
+	import dayjs from 'dayjs';
+	import utc from 'dayjs/plugin/utc';
+	import timezone from 'dayjs/plugin/timezone';
 	import { onMount } from 'svelte';
-	import { logout, auth } from '$lib/stores/auth';
+	import type { Room } from '$lib/types/Room';
+	import type { Reservation } from '$lib/types/Reservation';
+	import { auth, logout } from '$lib/stores/auth';
 	import { get } from 'svelte/store';
 	import { goto } from '$app/navigation';
+	import { format } from 'date-fns';
+	import { ko } from 'date-fns/locale';
 
-	let mySeat: number | null = null;
-	let usedSeats: number[] = [];
+	// 날짜 포맷 함수
+	function formatDateKorean(dateString: string) {
+		const dateObj = new Date(dateString);
+		const month = dateObj.getMonth() + 1;
+		const day = dateObj.getDate();
+		const weekday = format(dateObj, 'eee', { locale: ko });
+		return `${month}.${day}.${weekday}`;
+	}
+
+	dayjs.extend(utc);
+	dayjs.extend(timezone);
+	const now = dayjs().tz('Asia/Seoul');
+
+	let availableHours: number[] = [];
+	let currentHour: number;
+	let date = new Date().toISOString().split('T')[0];
+	let rooms: Room[] = [];
+	let reservations: Reservation[] = [];
 	let userId: string | undefined;
 	let userName: string | undefined;
-	let userInZone = true;
+	const HOURS = Array.from({ length: 14 }, (_, i) => i + 9);
 
-	// Map data from the original SVG
-	const map = [
-		[1, 2, 3, 4, 5, null, 39, 40, null, 51],
-		[6, 7, 8, 9, 10, null, 41, 42, null, 52],
-		[11, 12, 13, 14, 15, null, 43, 44, null, 53],
-		[null, null, null, null, null, null, null, null, null, 54],
-		[16, 17, 18, 19, 20, null, 45, 46, null, 55],
-		[21, 22, 23, 24, 25, null, 47, 48, null, 56],
-		[null, null, null, null, null, null, null, null, null, 57],
-		[26, 27, 28, 29, 30, null, 49, 50, null, 58],
-		[31, 32, 33, 34, 35, null, null, null, null, 59],
-		[null, null, 36, 37, 38, null, null, null, null, 60]
-	];
-
-	const cellWidth = 40;
-	const cellHeight = 24;
-	const padding = 6;
+	const dates = Array.from({ length: 4 }, (_, i) => {
+		const d = new Date();
+		d.setDate(d.getDate() + i);
+		return d.toISOString().split('T')[0];
+	});
 
 	function goHome() {
 		goto('/');
 	}
 
-	async function fetchSeatStatus() {
-		const res = await fetch('/api/reading-seats');
-		const data = await res.json();
-		usedSeats = data.usedSeats;
-		mySeat = data.mySeat;
-	}
+	async function fetchData() {
+		const roomRes = await fetch('/api/rooms?type=STUDY');
+		rooms = await roomRes.json();
 
-	async function handleSeatClick(seat: number) {
-		if (!userInZone) {
-			alert('열람실 내에서만 등록이 가능합니다.');
-			return;
-		}
-
-		if (mySeat === seat) {
-			if (confirm(`${seat}번 좌석 퇴실하시겠습니까?`)) {
-				await fetch('/api/reading-seats', {
-					method: 'DELETE',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ seat, user_id: userId })
-				});
-				await fetchSeatStatus();
-			}
-		} else if (!usedSeats.includes(seat)) {
-			if (confirm(`${seat}번 좌석을 이용 등록하시겠습니까?`)) {
-				await fetch('/api/reading-seats', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ seat, user_id: userId, name: userName })
-				});
-				await fetchSeatStatus();
-			}
-		}
-	}
-
-	function checkLocation() {
-		navigator.geolocation.getCurrentPosition(
-			(pos) => {
-				const { latitude, longitude } = pos.coords;
-				const roomLat = 37.1234,
-					roomLng = 127.5678;
-				const distance = getDistanceFromLatLonInMeters(latitude, longitude, roomLat, roomLng);
-				userInZone = distance < 100;
-			},
-			(err) => {
-				console.error('위치 정보 확인 실패', err);
-				userInZone = false;
-			}
-		);
-	}
-
-	function getDistanceFromLatLonInMeters(lat1: number, lon1: number, lat2: number, lon2: number) {
-		const R = 6371000;
-		const dLat = ((lat2 - lat1) * Math.PI) / 180;
-		const dLon = ((lon2 - lon1) * Math.PI) / 180;
-		const a =
-			Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-			Math.cos((lat1 * Math.PI) / 180) *
-				Math.cos((lat2 * Math.PI) / 180) *
-				Math.sin(dLon / 2) *
-				Math.sin(dLon / 2);
-		const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-		return R * c;
+		const resvRes = await fetch(`/api/reservations?inquery_date=${date}`);
+		reservations = await resvRes.json();
 	}
 
 	onMount(() => {
@@ -101,13 +57,97 @@
 		if (!$auth.isLoggedIn) {
 			userId = 'A011982';
 			userName = '이상근';
-			fetchSeatStatus();
+			const now = dayjs().tz('Asia/Seoul');
+			currentHour = now.hour();
+			availableHours = Array.from({ length: 14 }, (_, i) => i + 9);
+			fetchData();
 		} else {
 			userId = $auth.id_no;
 			userName = $auth.user_name;
-			fetchSeatStatus();
+			const now = dayjs().tz('Asia/Seoul');
+			currentHour = now.hour();
+			availableHours = Array.from({ length: 14 }, (_, i) => i + 9);
+			fetchData();
 		}
 	});
+
+	function isPast(hour: number): boolean {
+		return date === now.format('YYYY-MM-DD') && hour <= currentHour;
+	}
+
+	function isReserved(roomId: number, hour: number): boolean {
+		return reservations.some((r) => {
+			if (r.room_id !== roomId) return false;
+			const startDateUTC = new Date(r.start_time);
+			const startDateKST = new Date(startDateUTC.getTime() + 9 * 60 * 60 * 1000);
+			const kstHour = startDateKST.getHours();
+			const kstDateStr = startDateKST.toISOString().split('T')[0];
+			return kstDateStr === date && kstHour === hour;
+		});
+	}
+
+	function getMyReservation(roomId: number, hour: number) {
+		return reservations.find((r) => {
+			const startDateUTC = new Date(r.start_time);
+			const startDateKST = new Date(startDateUTC.getTime() + 9 * 60 * 60 * 1000);
+			const kstHour = startDateKST.getHours();
+			const kstDateStr = startDateKST.toISOString().split('T')[0];
+			return (
+				r.room_id === roomId && kstDateStr === date && kstHour === hour && r.user_id === userId
+			);
+		});
+	}
+
+	function isMine(roomId: number, hour: number): boolean {
+		return !!getMyReservation(roomId, hour);
+	}
+
+	async function handleClick(roomId: number, hour: number) {
+		const mine = isMine(roomId, hour);
+		const reserved = isReserved(roomId, hour);
+
+		if (mine) {
+			const myReservation = getMyReservation(roomId, hour);
+			const reservationId = myReservation?.id;
+
+			if (reservationId && confirm(`${hour}시 예약을 취소하시겠습니까?`)) {
+				await fetch('/api/reservations', {
+					method: 'DELETE',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ id: reservationId, user_id: userId })
+				});
+				await fetchData();
+			}
+		} else if (!reserved) {
+			const nextHour = hour + 1;
+			const nextAvailable = !isReserved(roomId, nextHour);
+
+			if (confirm(`${hour}시에 예약하시겠습니까?`)) {
+				const start = new Date(`${date}T${String(hour).padStart(2, '0')}:00:00`);
+				const end = new Date(start.getTime() + 60 * 60 * 1000);
+
+				const res = await fetch(`/api/reservations`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						room_id: roomId,
+						user_id: userId,
+						start_time: start.toISOString(),
+						end_time: end.toISOString(),
+						name: userName,
+						email: '',
+						phone: ''
+					})
+				});
+				if (!res.ok) {
+					const message = await res.text();
+					alert(`예약 실패: ${message}`);
+					return;
+				}
+				await fetchData();
+			}
+		}
+	}
 
 	function handleLogout() {
 		logout();
@@ -123,63 +163,65 @@
 		<button on:click={goHome} class="text-sm text-blue-600 hover:underline">← Home</button>
 		<button class="text-sm text-red-500 hover:underline" on:click={handleLogout}>로그아웃</button>
 	</div>
-	<h1 class="text-center text-2xl font-bold">도담 📖열람실 이용 등록</h1>
 
-	<svg
-		width={map[0].length * (cellWidth + padding)}
-		height={map.length * (cellHeight + padding)}
-		style="background-color: white; max-width: 100%; height: auto;"
-	>
-		{#each map as row, rowIndex}
-			{#each row as seat, colIndex}
-				{#if seat}
-					<g
-						role="button"
-						tabindex={usedSeats.includes(seat) && mySeat !== seat ? -1 : 0}
-						on:click={() => handleSeatClick(seat)}
-						on:keydown={(e) => {
-							if (e.key === 'Enter' || e.key === ' ') {
-								e.preventDefault();
-								handleSeatClick(seat);
-							}
-						}}
-						style="cursor: {usedSeats.includes(seat) && mySeat !== seat
-							? 'not-allowed'
-							: 'pointer'}"
-						aria-disabled={usedSeats.includes(seat) && mySeat !== seat}
-						aria-label={`Seat ${seat} ${mySeat === seat ? 'occupied by you' : usedSeats.includes(seat) ? 'occupied' : 'available'}`}
-					>
-						<rect
-							x={colIndex * (cellWidth + padding)}
-							y={rowIndex * (cellHeight + padding)}
-							width={cellWidth}
-							height={cellHeight}
-							fill={mySeat === seat ? 'red' : usedSeats.includes(seat) ? 'gray' : 'yellowgreen'}
-							stroke="black"
-							stroke-width="1"
-							rx="4"
-							ry="4"
-						/>
-						<text
-							x={colIndex * (cellWidth + padding) + cellWidth / 2}
-							y={rowIndex * (cellHeight + padding) + cellHeight / 2 + 4}
-							text-anchor="middle"
-							fill="white"
-							font-size="12"
-							font-family="sans-serif"
-						>
-							{seat}
-						</text>
-					</g>
-				{/if}
-			{/each}
+	<h1 class="mb-4 text-2xl font-bold">IC-PBL 💬토론실 예약</h1>
+
+	<!-- 날짜 선택 탭 -->
+	<div class="mb-4 flex flex-wrap justify-center gap-2">
+		{#each dates as d}
+			<button
+				class="rounded-md border-2 px-3 py-1 text-sm font-semibold
+				{d === date ? 'border-blue-500 bg-blue-100' : 'border-transparent bg-gray-100'}"
+				on:click={() => {
+					date = d;
+					reservations = [];
+					fetchData();
+				}}
+			>
+				{formatDateKorean(d)}
+			</button>
 		{/each}
-	</svg>
-</main>
+	</div>
 
-<style>
-	svg {
-		max-width: 100%;
-		height: auto;
-	}
-</style>
+	<!-- 색상 안내 -->
+	<div class="mb-4 text-sm text-gray-600">
+		<span class="mr-1 inline-block h-4 w-4 bg-blue-500"></span> 예약가능
+		<span class="mr-1 ml-4 inline-block h-4 w-4 bg-red-500"></span> 내 예약
+		<span class="mr-1 ml-4 inline-block h-4 w-4 bg-gray-300"></span> 타인예약
+		<span class="mr-1 ml-4 inline-block h-4 w-4 bg-gray-400"></span> 예약불가
+	</div>
+
+	<!-- 각 방별 시간 예약 버튼 -->
+	{#each rooms as room}
+		<div class="mb-8">
+			<h3 class="mb-2 text-left text-lg font-semibold">{room.name}</h3>
+			<div class="flex justify-center">
+				<div class="flex max-w-full flex-wrap justify-start gap-1 sm:gap-2">
+					{#each HOURS as hour}
+						<button
+							class="h-8 w-8 rounded-md text-sm font-bold text-white sm:h-9 sm:w-10
+								{isPast(hour)
+								? 'cursor-not-allowed bg-gray-400'
+								: isMine(room.id, hour)
+									? 'bg-red-500'
+									: isReserved(room.id, hour)
+										? 'cursor-not-allowed bg-gray-300'
+										: 'bg-blue-500 hover:bg-blue-600'}"
+							on:click={() => handleClick(room.id, hour)}
+							disabled={isPast(hour) || (isReserved(room.id, hour) && !isMine(room.id, hour))}
+							aria-label="{hour}시 {isPast(hour)
+								? '예약 불가'
+								: isMine(room.id, hour)
+									? '내 예약'
+									: isReserved(room.id, hour)
+										? '타인 예약'
+										: '예약 가능'}"
+						>
+							{hour}
+						</button>
+					{/each}
+				</div>
+			</div>
+		</div>
+	{/each}
+</main>
