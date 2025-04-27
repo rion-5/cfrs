@@ -4,7 +4,7 @@
   import { goto } from '$app/navigation';
   import { get } from 'svelte/store';
   import { onMount } from 'svelte';
-  import type { MyReservation } from '$lib/types/MyReservation';
+  import type { MyReservation } from '$lib/types';
 
   let userId: string | undefined;
   let userName: string | undefined;

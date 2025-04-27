@@ -4,8 +4,7 @@
 	import utc from 'dayjs/plugin/utc';
 	import timezone from 'dayjs/plugin/timezone';
 	import { onMount } from 'svelte';
-	import type { Room } from '$lib/types/Room';
-	import type { Reservation } from '$lib/types/Reservation';
+	import type { Room, Reservation } from '$lib/types';
 	import { auth, logout } from '$lib/stores/auth';
 	import { get } from 'svelte/store';
 	import { goto } from '$app/navigation';

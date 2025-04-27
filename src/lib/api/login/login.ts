@@ -1,7 +1,6 @@
 // src/lib/api/login/login.ts
 
-import type { LoginParam } from '$lib/types/LoginParam';
-import type { PyxisLoginData } from '$lib/types/PyxisLoginData';
+import type { LoginParam, PyxisLoginData } from '$lib/types';
 
 export async function login(params: LoginParam): Promise<PyxisLoginData> {
   const response = await fetch('https://lib.hanyang.ac.kr/pyxis-api/api/login', {

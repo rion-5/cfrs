@@ -4,7 +4,7 @@
   import { onMount } from 'svelte';
   import { auth } from '$lib/stores/auth';
   import { login } from '$lib/api/login/login';
-  import type { LoginParam } from '$lib/types/LoginParam';
+  import type { LoginParam } from '$lib/types';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { get } from 'svelte/store';
