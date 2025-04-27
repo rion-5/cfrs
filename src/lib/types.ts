@@ -27,6 +27,16 @@ export type Room = {
   capacity: number;
 };
 
+// Seat Usage Types
+export interface MySeatUsage {
+  id: number;
+  seat_number: number;
+  user_id: string;
+  start_time: string;
+  end_time?: string;
+}
+
+
 export interface PyxisLoginData {
   success: boolean;
   code: string;

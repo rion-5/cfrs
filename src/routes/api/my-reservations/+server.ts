@@ -10,7 +10,8 @@ export const GET: RequestHandler = async ({ url }) => {
   }
 
   try {
-    const result = await query(
+    // 토론실 예약 조회
+    const reservations = await query(
       `SELECT r.id, r.room_id,
         (SELECT name FROM room WHERE id = r.room_id) AS room_name,
         r.start_time, r.end_time, r.actual_end_time
@@ -20,7 +21,18 @@ export const GET: RequestHandler = async ({ url }) => {
        ORDER BY r.start_time ASC`,
       [user_id]
     );
-    return json(result);
+
+    // 열람실 이용 현황 조회
+    const seatUsages = await query(
+      `SELECT id, seat_number, user_id, start_time, end_time
+       FROM reading_seats
+       WHERE user_id = $1
+         AND DATE(start_time) >= CURRENT_DATE
+       ORDER BY start_time ASC`,
+      [user_id]
+    );
+
+    return json({ reservations, seatUsages });
   } catch (err) {
     console.error(err);
     return json({ error: '내부 서버 오류입니다.' }, { status: 500 });

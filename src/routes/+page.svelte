@@ -4,24 +4,27 @@
   import { goto } from '$app/navigation';
   import { get } from 'svelte/store';
   import { onMount } from 'svelte';
-  import type { MyReservation } from '$lib/types';
+  import type { MyReservation, MySeatUsage } from '$lib/types';
 
   let userId: string | undefined;
   let userName: string | undefined;
   let reservations: MyReservation[] = [];
+  let seatUsages: MySeatUsage[] = [];
 
   const handleSelect = (type: 'STUDY' | 'READING' | 'LECTURE') => {
     goto(`/${type.toLowerCase()}`);
   };
 
-  async function fetchReservations() {
+  async function fetchData() {
     if (!userId) return;
     const res = await fetch(`/api/my-reservations?user_id=${userId}`);
     if (!res.ok) {
-      alert('예약 현황을 불러오지 못했습니다.');
+      alert('현황을 불러오지 못했습니다.');
       return;
     }
-    reservations = await res.json();
+    const data = await res.json();
+    reservations = data.reservations;
+    seatUsages = data.seatUsages;
   }
 
   function handleLogout() {
@@ -29,7 +32,7 @@
     goto('/login');
   }
 
-  function formatKSTRange(start: string, end: string): string {
+  function formatKSTRange(start: string, end?: string): string {
     const startDate = new Date(start);
     const date = startDate.toLocaleDateString('ko-KR', {
       month: 'numeric',
@@ -42,6 +45,8 @@
       minute: '2-digit',
       hour12: false
     });
+
+    if (!end) return `${date} ${startTime} ~ 사용중`;
 
     const endTime = new Date(end).toLocaleTimeString('ko-KR', {
       hour: '2-digit',
@@ -59,23 +64,23 @@
     } else {
       userId = $auth.id_no;
       userName = $auth.user_name;
-      fetchReservations();
+      fetchData();
     }
   });
 
-  function getStatus(r: MyReservation) {
+  function getStatus(item: MyReservation | MySeatUsage) {
     const now = new Date();
-    const start = new Date(r.start_time);
-    const end = new Date(r.end_time);
-    const actualEnd = r.actual_end_time ? new Date(r.actual_end_time) : null;
+    const start = new Date(item.start_time);
+    const end = item.end_time ? new Date(item.end_time) : null;
+    const actualEnd = ('actual_end_time' in item && item.actual_end_time) ? new Date(item.actual_end_time) : null;
 
     if (actualEnd) return '완료';
-    if (now >= end) return '완료';
+    if (end && now >= end) return '완료';
     if (now >= start) return '사용중';
     return '예약중';
   }
 
-  async function handleCancel(reservationId: number) {
+  async function handleCancelReservation(reservationId: number) {
     if (confirm('예약을 취소하시겠습니까?')) {
       const res = await fetch('/api/reservations', {
         method: 'DELETE',
@@ -86,7 +91,22 @@
         alert('예약 취소에 실패했습니다.');
         return;
       }
-      await fetchReservations();
+      await fetchData();
+    }
+  }
+
+  async function handleCancelSeatUsage(seatId: number) {
+    if (confirm('좌석 이용을 취소하시겠습니까?')) {
+      const res = await fetch('/api/reading-seats', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ seat: seatId, user_id: userId })
+      });
+      if (!res.ok) {
+        alert('좌석 이용 취소에 실패했습니다.');
+        return;
+      }
+      await fetchData();
     }
   }
 </script>
@@ -124,7 +144,7 @@
   </div>
 
   <div class="mt-6 space-y-4">
-    <h2 class="text-left text-base font-semibold">📌 예약 현황</h2>
+    <h2 class="text-left text-base font-semibold">📌 토론실 예약 현황</h2>
 
     {#if reservations.length > 0}
       <div class="space-y-2">
@@ -153,7 +173,7 @@
               {#if getStatus(r) === '예약중'}
                 <button
                   class="rounded border border-red-300 px-2 py-1 text-xs text-red-500 hover:bg-red-100"
-                  on:click={() => handleCancel(r.id)}
+                  on:click={() => handleCancelReservation(r.id)}
                 >
                   취소
                 </button>
@@ -164,6 +184,48 @@
       </div>
     {:else}
       <div class="text-sm text-gray-400">예정된 예약이 없습니다.</div>
+    {/if}
+
+    <h2 class="text-left text-base font-semibold">📖 열람실 이용 현황</h2>
+
+    {#if seatUsages.length > 0}
+      <div class="space-y-2">
+        {#each seatUsages as s}
+          <div
+            class="flex items-center justify-between space-x-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm"
+          >
+            <!-- 상태 -->
+            <div
+              class="min-w-[56px] rounded px-2 py-1 text-center text-xs font-semibold text-white"
+              class:bg-blue-500={getStatus(s) === '예약중'}
+              class:bg-green-500={getStatus(s) === '사용중'}
+              class:bg-gray-400={getStatus(s) === '완료'}
+            >
+              {getStatus(s)}
+            </div>
+
+            <!-- 좌석 번호 + 날짜/시간 -->
+            <div class="flex-1 text-left">
+              <div class="font-semibold">좌석 {s.seat_number}</div>
+              <div class="text-xs text-gray-500">{formatKSTRange(s.start_time, s.end_time)}</div>
+            </div>
+
+            <!-- 버튼 -->
+            <div class="flex items-center space-x-1">
+              {#if getStatus(s) === '예약중' || getStatus(s) === '사용중'}
+                <button
+                  class="rounded border border-red-300 px-2 py-1 text-xs text-red-500 hover:bg-red-100"
+                  on:click={() => handleCancelSeatUsage(s.seat_number)}
+                >
+                  퇴실
+                </button>
+              {/if}
+            </div>
+          </div>
+        {/each}
+      </div>
+    {:else}
+      <div class="text-sm text-gray-400">현재 이용 중인 좌석이 없습니다.</div>
     {/if}
   </div>
 </main>
