@@ -55,12 +55,14 @@
 	onMount(() => {
 		const $auth = get(auth);
 		if (!$auth.isLoggedIn) {
-			userId = 'A011982';
-			userName = '이상근';
-			const now = dayjs().tz('Asia/Seoul');
-			currentHour = now.hour();
-			availableHours = Array.from({ length: 14 }, (_, i) => i + 9);
-			fetchData();
+			goto('/login?redirect=/study'); //로그인 후 다시 돌아오게
+      // 아래는 로그인 없이 테스트할 때 사용
+			// userId = 'A011982';
+			// userName = '이상근';
+			// const now = dayjs().tz('Asia/Seoul');
+			// currentHour = now.hour();
+			// availableHours = Array.from({ length: 14 }, (_, i) => i + 9);
+			// fetchData();
 		} else {
 			userId = $auth.id_no;
 			userName = $auth.user_name;

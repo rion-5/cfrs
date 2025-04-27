@@ -1,4 +1,4 @@
-<!-- /src/routes/reading/+page.svelte -->
+<!-- src/routes/reading/+page.svelte -->
 
 <script lang="ts">
 	import { onMount } from 'svelte';
@@ -12,7 +12,6 @@
 	let userName: string | undefined;
 	let userInZone = true;
 
-	// 수정된 맵
 	const map = [
 		[1, 2, 3, 4, 5, null, 39, 40, null, 51],
 		[null, null, null, null, null, null, null, null, null, 52],
@@ -32,13 +31,32 @@
 		goto('/');
 	}
 
+	// async function fetchSeatStatus() {
+	// 	const res = await fetch('/api/reading-seats');
+	// 	const data = await res.json();
+	// 	usedSeats = data.usedSeats;
+	// 	mySeat = data.mySeat;
+	// }
 	async function fetchSeatStatus() {
-		const res = await fetch('/api/reading-seats');
-		const data = await res.json();
-		usedSeats = data.usedSeats;
-		mySeat = data.mySeat;
-	}
-
+    if (!userId) {
+      alert('로그인이 필요합니다.');
+      goto('/login');
+      return;
+    }
+    const response = await fetch('/api/reading-seats', {
+      headers: {
+        'x-user-id': userId, // $auth.id_no에서 가져온 userId
+      },
+    });
+    if (!response.ok) {
+      const error = await response.text();
+      alert(error);
+      return;
+    }
+    const data = await response.json();
+    usedSeats = data.usedSeats;
+    mySeat = data.mySeat;
+  }
 	async function handleSeatClick(seat: number) {
 		if (!userInZone) {
 			alert('열람실 내에서만 등록이 가능합니다.');
@@ -99,9 +117,11 @@
 	onMount(() => {
 		const $auth = get(auth);
 		if (!$auth.isLoggedIn) {
-			userId = 'A011982';
-			userName = '이상근';
-			fetchSeatStatus();
+			goto('/login?redirect=/reading'); //로그인 후 다시 돌아오게
+			// 아래는 로그인 없이 테스트할 때
+			// userId = 'A011982';
+			// userName = '이상근';
+			// fetchSeatStatus();
 		} else {
 			userId = $auth.id_no;
 			userName = $auth.user_name;

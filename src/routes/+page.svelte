@@ -56,10 +56,11 @@
 	onMount(() => {
 		const $auth = get(auth);
 		if (!$auth.isLoggedIn) {
-			// goto('/login');
-			userId = 'A011982';
-			userName = '이상근';
-			fetchReservations();
+			goto('/login');
+			// 아래는 로그인 없이 테스트할 때 사용
+			// userId = 'A011982';
+			// userName = '이상근';
+			// fetchReservations();
 		} else {
 			userId = $auth.id_no;
 			userName = $auth.user_name;
