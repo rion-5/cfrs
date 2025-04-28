@@ -5,7 +5,8 @@
   import { get } from 'svelte/store';
   import { onMount } from 'svelte';
   import type { MyReservation, MySeatUsage } from '$lib/types';
-
+  import dayjs from 'dayjs';
+  
   let userId: string | undefined;
   let userName: string | undefined;
   let reservations: MyReservation[] = [];
@@ -144,7 +145,7 @@
   </div>
 
   <div class="mt-6 space-y-4">
-    <h2 class="text-left text-base font-semibold">📌 토론실 예약 현황</h2>
+    <h2 class="text-left text-base font-semibold">💬 토론실 예약 현황</h2>
 
     {#if reservations.length > 0}
       <div class="space-y-2">

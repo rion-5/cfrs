@@ -65,20 +65,32 @@
 
 		if (mySeat === seat) {
 			if (confirm(`${seat}번 좌석 퇴실하시겠습니까?`)) {
-				await fetch('/api/reading-seats', {
+				const res = await fetch('/api/reading-seats', {
 					method: 'DELETE',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({ seat, user_id: userId })
 				});
+				if (!res.ok) {
+          const message = await res.text();
+          alert(`퇴실 실패: ${message}`);
+          return;
+        }
 				await fetchSeatStatus();
 			}
 		} else if (!usedSeats.includes(seat)) {
 			if (confirm(`${seat}번 좌석을 이용 등록하시겠습니까?`)) {
-				await fetch('/api/reading-seats', {
+				const res = await fetch('/api/reading-seats', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({ seat, user_id: userId, name: userName })
 				});
+				if (!res.ok) {
+          const message = await res.text();
+          alert(`등록 실패: ${message}`);
+          return;
+        }
+
+
 				await fetchSeatStatus();
 			}
 		}
@@ -142,7 +154,12 @@
 		<button class="text-sm text-red-500 hover:underline" on:click={handleLogout}>로그아웃</button>
 	</div>
 	<h1 class="text-center text-2xl font-bold">도담 📖열람실 이용 등록</h1>
-
+	<!-- 색상 안내 -->
+	<div class="mt-4 text-sm text-gray-600">
+		<span class="inline-block h-4 w-4 bg-green-500 mr-1"></span> 사용 가능
+		<span class="inline-block h-4 w-4 bg-red-500 mr-1 ml-4"></span> 내 좌석
+		<span class="inline-block h-4 w-4 bg-gray-400 mr-1 ml-4"></span> 사용 중
+	</div>
 	<!-- Seat Map Layout -->
 	<div class="flex justify-center">
 		<div
@@ -173,10 +190,4 @@
 		</div>
 	</div>
 
-	<!-- 색상 안내 -->
-	<div class="mt-4 text-sm text-gray-600">
-		<span class="inline-block h-4 w-4 bg-green-500 mr-1"></span> 사용 가능
-		<span class="inline-block h-4 w-4 bg-red-500 mr-1 ml-4"></span> 내 좌석
-		<span class="inline-block h-4 w-4 bg-gray-400 mr-1 ml-4"></span> 사용 중
-	</div>
 </main>

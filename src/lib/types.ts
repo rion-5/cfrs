@@ -9,7 +9,7 @@ export type MyReservation = {
   room_name: string;
 	start_time: string;
 	end_time: string;
-	actual_end_time: string | null;
+	actual_end_time?: string ;
 };
 
 export type Reservation = {
@@ -33,7 +33,7 @@ export interface MySeatUsage {
   seat_number: number;
   user_id: string;
   start_time: string;
-  end_time?: string;
+  end_time?: string ;
 }
 
 
