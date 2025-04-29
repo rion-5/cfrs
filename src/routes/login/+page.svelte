@@ -34,8 +34,9 @@
 
     try {
       const result = await login(params);
-      console.log(JSON.stringify(result, null, 2));
-      if (result.success) {
+      const dept_code = result.data.parentDept.code;
+      // console.log(JSON.stringify(result, null, 2));
+      if (result.success && (dept_code === 'Y0000502' || dept_code === 'Y0001097' )) {
         auth.set({ isLoggedIn: true,
                    user_name: result.data.name,
                    id_no: result.data.memberNo,
@@ -50,7 +51,11 @@
         console.log("리다이렉트 대상:", target);
         goto(target);
       } else {
-        error = result.message;
+        if((dept_code === 'Y0000502' || dept_code === 'Y0001097' )){
+          error = result.message;
+        } else {
+          error = "경상대 소속이 아닙니다.";
+        }
       }
     } catch (err) {
       if (err instanceof Error) {

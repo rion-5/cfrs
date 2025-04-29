@@ -59,10 +59,10 @@
   }
 
   async function handleSeatClick(seat: number) {
-    if (!userInZone) {
-      alert('열람실 내에서만 등록이 가능합니다.');
-      return;
-    }
+    // if (!userInZone) {
+    //   alert('열람실 내에서만 등록이 가능합니다.');
+    //   return;
+    // }
     try {
       if (mySeat === seat) {
         if (confirm(`${seat}번 좌석 퇴실하시겠습니까?`)) {
