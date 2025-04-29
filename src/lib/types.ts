@@ -1,6 +1,23 @@
+
+
 export interface LoginParam {
 	loginId: string;
 	password: string;
+}
+
+
+// 세션 데이터 타입
+export interface Session {
+  id_no: string;
+  user_name: string;
+}
+
+export interface UserStatus {
+  user_name: string;
+  id_no: string;
+  dept_name: string;
+  dept_code: string;
+
 }
 
 export type MyReservation = {
