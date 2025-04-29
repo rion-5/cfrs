@@ -14,18 +14,18 @@
   let error: string | null = null; // 에러 상태 추가
 
   const map = [
-    [1, 2, 3, 4, 5, null, 39, 40, null, 51],
+    [1, 2, 3, 4, 5, null, 6, 7, null, 51],
     [null, null, null, null, null, null, null, null, null, 52],
-    [6, 7, 8, 9, 10, null, 41, 42, null, 53],
-    [11, 12, 13, 14, 15, null, 43, 44, null, 54],
+    [8, 9, 10, 11, 12, null, 13, 14, null, 53],
+    [15, 16, 17, 18, 19, null, 20, 21, null, 54],
     [null, null, null, null, null, null, null, null, null, 55],
-    [16, 17, 18, 19, 20, null, 45, 46, null, 56],
-    [21, 22, 23, 24, 25, null, 47, 48, null, 57],
+    [22, 23, 24, 25, 26, null, 27, 28, null, 56],
+    [29, 30, 31, 32, 33, null, 34, 35, null, 57],
     [null, null, null, null, null, null, null, null, null, 58],
-    [26, 27, 28, 29, 30, null, 49, 50, null, 59],
-    [31, 32, 33, 34, 35, null, null, null, null, 60],
+    [36, 37, 38, 39, 40, null, 41, 42, null, 59],
+    [43, 44, 45, 46, 47, null, null, null, null, 60],
     [null, null, null, null, null, null, null, null, null, null],
-    [null, null, 36, 37, 38, null, null, null, null, null]
+    [null, null, 48, 49, 50, null, null, null, null, null]
   ];
 
   function goHome() {
