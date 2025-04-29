@@ -21,11 +21,13 @@
 
   async function handleLogin() {
     if (!loginId){
+      error = "Please enter your Student ID";
       loginIdInput.focus();
       return;
     }
 
     if (!password){
+      error = "Please enter your Password";
       passwordInput.focus();
       return;
     }
@@ -34,7 +36,7 @@
 
     try {
       const result = await login(params);
-      const dept_code = result.data.parentDept.code;
+      const dept_code = result.data?.parentDept?.code;
       // console.log(JSON.stringify(result, null, 2));
       if (result.success && (dept_code === 'Y0000502' || dept_code === 'Y0001097' )) {
         auth.set({ isLoggedIn: true,
@@ -51,18 +53,26 @@
         console.log("리다이렉트 대상:", target);
         goto(target);
       } else {
-        if((dept_code === 'Y0000502' || dept_code === 'Y0001097' )){
-          error = result.message;
-        } else {
-          error = "경상대 소속이 아닙니다.";
-        }
+        // Reset inputs and focus on loginId
+        loginId = "";
+        password = "";
+        error = (dept_code === 'Y0000502' || dept_code === 'Y0001097') 
+          ? result.message 
+          : "Access restricted to 경상대 members only";
+
+        // if((dept_code === 'Y0000502' || dept_code === 'Y0001097' )){
+        //   error = result.message;
+        // } else {
+        //   error = "경상대 소속만 접근 가능합니다.";
+        // }
+        loginIdInput.focus();
       }
     } catch (err) {
-      if (err instanceof Error) {
-        error = err.message;
-      } else {
-        error = 'An unknown error occurred';
-      }     
+      // Reset inputs and focus on loginId
+      loginId = "";
+      password = "";
+      loginIdInput.focus();
+      error = err instanceof Error ? err.message : 'An unexpected error occurred';
     }
   }
 
@@ -101,7 +111,16 @@
     <button class="w-full p-3 bg-blue-600 text-white rounded-md hover:bg-blue-700"
       on:click={handleLogin}>Login</button>
     {#if error}
-      <p class="error-message">{error}</p>
+      <p class="text-red-500 text-sm mt-3 text-center">{error}</p>
     {/if}
   </div>    
 </main>
+
+<!-- <style>
+  .error-message {
+    color: #ef4444;
+    font-size: 0.875rem;
+    margin-top: 0.75rem;
+    text-align: center;
+  }
+</style> -->

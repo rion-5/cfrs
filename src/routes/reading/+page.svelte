@@ -162,7 +162,7 @@
       userId = $auth.id_no;
       userName = $auth.user_name;
       fetchSeatStatus();
-      checkLocation();
+      // checkLocation();
     }
   });
 
