@@ -66,7 +66,7 @@ export const POST: RequestHandler = async ({ request }) => {
             return new Response('이미 다른 좌석을 사용 중입니다.', { status: 403 });
         }
 
-        // 하루 2번, 3시간 제한 검증
+        // 하루 10번, 3시간 제한 검증
         const today = new Date().toISOString().split('T')[0];
         const usageCheck = await query(
             `SELECT COUNT(*) AS usage_count, 
@@ -78,7 +78,7 @@ export const POST: RequestHandler = async ({ request }) => {
         const usageCount = parseInt(usageCheck[0].usage_count, 10);
         const totalHours = parseFloat(usageCheck[0].total_hours || '0');
 
-        if (usageCount >= 2) {
+        if (usageCount >= 10) {
             return new Response('하루에 2번만 이용할 수 있습니다.', { status: 403 });
         }
         if (totalHours >= 6) {
