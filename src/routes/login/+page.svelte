@@ -39,8 +39,8 @@
         auth.set({ isLoggedIn: true,
                    user_name: result.data.name,
                    id_no: result.data.memberNo,
-                   dept_name: result.data.parentDept.name,
-                   dept_code: result.data.parentDept.code
+                  //  dept_name: result.data.parentDept.name,
+                  //  dept_code: result.data.parentDept.code
         });
         error = null;
 

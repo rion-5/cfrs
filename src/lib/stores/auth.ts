@@ -1,24 +1,44 @@
-// src/lib/stores/auth.ts
 import { writable } from 'svelte/store';
+import { browser } from '$app/environment';
 
-export interface AuthState {
+interface AuthState {
   isLoggedIn: boolean;
-  user_name?: string;  // optional property
-  id_no?: string;
-  dept_name?: string;
-  dept_code?: string;
+  id_no: string | null;
+  user_name: string | null;
 }
 
-const initialAuthState: AuthState = {
-  isLoggedIn: false
-  // optional 속성은 생략 가능
+const initialState: AuthState = {
+  isLoggedIn: false,
+  id_no: null,
+  user_name: null
 };
 
-export const auth = writable<AuthState>(initialAuthState);
+if (browser) {
+  const stored = localStorage.getItem('auth');
+  if (stored) {
+    Object.assign(initialState, JSON.parse(stored));
+  }
+}
 
-export function logout() {
-  auth.set({
-    isLoggedIn: false
-    // optional 속성은 생략하면 undefined로 설정됨
-  });
+export const auth = writable<AuthState>(initialState);
+
+auth.subscribe((value) => {
+  if (browser) {
+    localStorage.setItem('auth', JSON.stringify(value));
+  }
+});
+
+export async function logout() {
+  try {
+    const response = await fetch('/api/auth/logout', { method: 'POST' });
+    if (!response.ok) {
+      throw new Error('로그아웃 실패');
+    }
+    auth.set({ isLoggedIn: false, id_no: null, user_name: null });
+    if (browser) {
+      localStorage.removeItem('auth');
+    }
+  } catch (err) {
+    console.error('로그아웃 에러:', err);
+  }
 }
