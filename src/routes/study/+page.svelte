@@ -27,8 +27,8 @@
   let date = new Date().toISOString().split('T')[0];
   let rooms: Room[] = [];
   let reservations: Reservation[] = [];
-  let userId: string | undefined;
-  let userName: string | undefined;
+  let userId: string | null;
+  let userName: string | null;
   const HOURS = Array.from({ length: 14 }, (_, i) => i + 9);
 
   const dates = Array.from({ length: 4 }, (_, i) => {
@@ -187,7 +187,7 @@
   <!-- 각 방별 시간 예약 버튼 -->
   {#each rooms as room}
     <div class="mb-8">
-      <h3 class="mb-2 text-left text-lg font-semibold">{room.name}</h3>
+      <h3 class="mb-2 text-left text-lg font-semibold">토론실 {room.name}</h3>
       <div class="flex justify-center">
         <div class="flex max-w-full flex-wrap justify-start gap-1 sm:gap-2">
           {#each HOURS as hour}

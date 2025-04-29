@@ -7,8 +7,8 @@
   import type { MyReservation, MySeatUsage } from '$lib/types';
   import dayjs from 'dayjs';
   
-  let userId: string | undefined;
-  let userName: string | undefined;
+  let userId: string | null;
+  let userName: string | null;
   let reservations: MyReservation[] = [];
   let seatUsages: MySeatUsage[] = [];
 
@@ -165,7 +165,7 @@
 
             <!-- 호실명 + 날짜/시간 -->
             <div class="flex-1 text-left">
-              <div class="font-semibold">{r.room_name}</div>
+              <div class="font-semibold">토론실 {r.room_name}</div>
               <div class="text-xs text-gray-500">{formatKSTRange(r.start_time, r.end_time)}</div>
             </div>
 
