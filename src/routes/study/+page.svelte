@@ -2,8 +2,7 @@
 <script lang="ts">
   import dayjs from 'dayjs';
   import { onMount } from 'svelte';
-  import type { Room } from '$lib/types';
-  import type { Reservation } from '$lib/types';
+  import type { Room, Reservation } from '$lib/types';
   import { auth, logout } from '$lib/stores/auth';
   import { get } from 'svelte/store';
   import { goto } from '$app/navigation';
@@ -24,17 +23,17 @@
 
   let availableHours: number[] = [];
   let currentHour: number;
-  let date = new Date().toISOString().split('T')[0];
+  // Use dayjs to set the current date in KST
+  let date = now.format('YYYY-MM-DD');
   let rooms: Room[] = [];
   let reservations: Reservation[] = [];
   let userId: string | null;
   let userName: string | null;
   const HOURS = Array.from({ length: 14 }, (_, i) => i + 9);
 
+  // Generate dates array starting from today (KST) for 4 days
   const dates = Array.from({ length: 4 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() + i);
-    return d.toISOString().split('T')[0];
+    return now.add(i, 'day').format('YYYY-MM-DD');
   });
 
   function goHome() {
