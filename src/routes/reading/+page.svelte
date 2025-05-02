@@ -93,7 +93,7 @@
             }
             throw new Error(data.message || '퇴실 실패');
           }
-          alert(data.message || '퇴실 완료');
+          // alert(data.message || '퇴실 완료');
           await fetchSeatStatus();
         }
       } else if (!usedSeats.includes(seat)) {
@@ -120,7 +120,7 @@
             }
             throw new Error(data.message || '등록 실패');
           }
-          alert(data.message || '등록 완료');
+          // alert(data.message || '등록 완료');
           await fetchSeatStatus();
         }
       }

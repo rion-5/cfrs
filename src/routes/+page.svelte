@@ -25,18 +25,20 @@
 			return;
 		}
 		try {
-			const res = await fetch(`/api/my-reservations?user_id=${userId}`, {
+			const res = await fetch(`/api/my-reservations`, {
 				credentials: 'include' // 쿠키 포함
 			});
+			const data = await res.json();
 			if (!res.ok) {
 				if (res.status === 401) {
 					error = '세션이 만료되었습니다. 다시 로그인해주세요.';
+					auth.set({ isLoggedIn: false, id_no: null, user_name: null });
 					goto('/login');
 					return;
 				}
-				throw new Error('현황을 불러오지 못했습니다.');
+				throw new Error(data.message || '예약 조회에 실패했습니다.');
 			}
-			const data = await res.json();
+
 			reservations = data.reservations;
 			seatUsages = data.seatUsages;
 			error = null;
@@ -149,13 +151,14 @@
 				}
 				await fetchData();
 			} catch (err) {
-				alert(err instanceof Error ? err.message : '예약 취소에 실패했습니다.');
+				// alert(err instanceof Error ? err.message : '예약 취소에 실패했습니다.');
+				throw err;
 			}
 		}
 	}
 
 	async function handleCancelSeatUsage(seatId: number) {
-		if (confirm('좌석 이용을 취소하시겠습니까?')) {
+		if (confirm('퇴실 하시겠습니까?')) {
 			try {
 				const res = await fetch('/api/reading-seats', {
 					method: 'DELETE',
@@ -169,11 +172,12 @@
 						goto('/login');
 						return;
 					}
-					throw new Error('좌석 이용 취소에 실패했습니다.');
+					throw new Error('퇴실을 실패했습니다.');
 				}
 				await fetchData();
 			} catch (err) {
-				alert(err instanceof Error ? err.message : '좌석 이용 취소에 실패했습니다.');
+				// alert(err instanceof Error ? err.message : '퇴실을 실패했습니다.');
+				throw err;
 			}
 		}
 	}

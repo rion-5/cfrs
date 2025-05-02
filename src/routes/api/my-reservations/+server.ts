@@ -3,14 +3,10 @@ import { json, error } from '@sveltejs/kit';
 import { query } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
-export const GET: RequestHandler = async ({ url, locals }) => {
+export const GET: RequestHandler = async ({ locals }) => {
   // 세션 검증
   if (!locals.session.user) {
     throw error(401, '인증되지 않은 사용자입니다.');
-  }
-  const userId = url.searchParams.get('user_id');
-  if (userId !== locals.session.user.id_no) {
-    throw error(403, '잘못된 사용자 ID입니다.');
   }
 
   try {
