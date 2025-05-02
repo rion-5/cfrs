@@ -6,7 +6,6 @@
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import type { MyReservation, MySeatUsage } from '$lib/types';
-	import dayjs from 'dayjs';
 
 	let userId: string | null;
 	let userName: string | null;
