@@ -1,9 +1,19 @@
 // src/api/reservations/+server.ts
-import { json } from '@sveltejs/kit';
+import { json, error } from '@sveltejs/kit';
 import { query } from '$lib/server/db';
 import type { RequestHandler } from './$types';
+import { getSession} from '$lib/server/session';
 
-export const GET: RequestHandler = async ({ url }) => {
+export const GET: RequestHandler = async ({ url, request ,locals}) => {
+  //세션 검증
+  const session = await getSession(request);
+  if(!session.user){
+    throw error(404, '인증되지 않은 사용자입니다.');
+  }
+  if (!locals.session.user) {
+    throw error(401, '인증되지 않은 사용자입니다.');
+  }
+
   const inquery_date = url.searchParams.get('inquery_date');
 
   if (!inquery_date) {

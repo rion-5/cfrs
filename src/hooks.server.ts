@@ -4,8 +4,7 @@ import type { Handle } from '@sveltejs/kit';
 
 export const handle: Handle = async ({ event, resolve }) => {
   const session = await getSession(event.request);
-  (event.locals as any).session = session; // 임시 타입 단언
-  // event.locals.session = session;
+  event.locals.session = session;
   const protectedPaths = ['/reading', '/study', '/lecture'];
   if (protectedPaths.some((path) => event.url.pathname.startsWith(path))) {
     if (!session.user) {
