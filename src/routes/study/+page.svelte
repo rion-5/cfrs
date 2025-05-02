@@ -133,18 +133,24 @@
 	function isReserved(roomId: number, hour: number): boolean {
 		return reservations.some((r) => {
 			if (r.room_id !== roomId) return false;
-			const startDate = new Date(r.start_time);
-			const kstHour = startDate.getHours();
-			const kstDateStr = startDate.toISOString().split('T')[0];
+			// const startDate = new Date(r.start_time);
+			// const kstHour = startDate.getHours();
+			// const kstDateStr = startDate.toISOString().split('T')[0];
+			const startDate = dayjs(r.start_time); // UTC ISO → KST
+      const kstHour = startDate.hour();
+      const kstDateStr = startDate.format('YYYY-MM-DD');
 			return kstDateStr === date && kstHour === hour;
 		});
 	}
 
 	function getMyReservation(roomId: number, hour: number) {
 		return reservations.find((r) => {
-			const startDate = new Date(r.start_time);
-			const kstHour = startDate.getHours();
-			const kstDateStr = startDate.toISOString().split('T')[0];
+			// const startDate = new Date(r.start_time);
+			// const kstHour = startDate.getHours();
+			// const kstDateStr = startDate.toISOString().split('T')[0];
+			const startDate = dayjs(r.start_time); // UTC ISO → KST
+      const kstHour = startDate.hour();
+      const kstDateStr = startDate.format('YYYY-MM-DD');
 			return (
 				r.room_id === roomId && kstDateStr === date && kstHour === hour && r.user_id === userId
 			);
