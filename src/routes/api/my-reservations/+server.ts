@@ -28,7 +28,8 @@ export const GET: RequestHandler = async ({ locals }) => {
        FROM reading_seats
        WHERE user_id = $1
          AND DATE(start_time) >= CURRENT_DATE
-       ORDER BY start_time ASC`,
+       ORDER BY start_time DESC 
+       LIMIT 1`,
       [locals.session.user.id_no]
     );
 
