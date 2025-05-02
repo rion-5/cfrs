@@ -3,12 +3,12 @@ import { json, error } from '@sveltejs/kit';
 import { query } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
-export const GET: RequestHandler = async ({ request, locals }) => {
-      // 세션 검증
-  if (!locals.session.user) {
-    throw error(401, '인증되지 않은 사용자입니다.');
-  }
-  
+export const GET: RequestHandler = async ({ locals }) => {
+    // 세션 검증
+    if (!locals.session.user) {
+        throw error(401, '인증되지 않은 사용자입니다.');
+    }
+
     try {
         // 현재 사용 중인 좌석 조회 (end_time IS NULL)
         const result = await query(
@@ -25,17 +25,16 @@ export const GET: RequestHandler = async ({ request, locals }) => {
         let mySeat: number | null = null;
         // const userId = request.headers.get('x-user-id');
 
-        if (locals.session.user.id_no) {
-            const mySeatResult = await query(
-                `SELECT seat_number
+        const mySeatResult = await query(
+            `SELECT seat_number
          FROM reading_seats
          WHERE user_id = $1 AND end_time IS NULL`,
-                [locals.session.user.id_no]
-            );
-            if (mySeatResult.length > 0) {
-                mySeat = parseInt(mySeatResult[0].seat_number);
-            }
+            [locals.session.user.id_no]
+        );
+        if (mySeatResult.length > 0) {
+            mySeat = parseInt(mySeatResult[0].seat_number);
         }
+
 
         return json({ usedSeats, mySeat });
     } catch (err) {
@@ -47,22 +46,18 @@ export const GET: RequestHandler = async ({ request, locals }) => {
 };
 
 export const POST: RequestHandler = async ({ request, locals }) => {
-      // 세션 검증
-      if (!locals.session.user) {
+    // 세션 검증
+    if (!locals.session.user) {
         throw error(401, '인증되지 않은 사용자입니다.');
-      }
+    }
 
     try {
         const body = await request.json();
-        const { seat, user_id, name } = body;
+        const { seat, name } = body;
 
-        if (!seat || !user_id || !name) {
+        if (!seat  || !name) {
             // return new Response('필수 필드가 누락되었습니다.', { status: 400 });
-            throw error(400, '필수 필드가 누락되었습니다.');
-        }
-
-        if (user_id !== locals.session.user.id_no) {
-          throw error(403, '잘못된 사용자 ID입니다.');
+            throw error(400, '좌석 번호 또는 이름이 누락되었습니다.');
         }
 
         // 이미 사용 중인 좌석인지 확인
@@ -110,7 +105,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         await query(
             `INSERT INTO reading_seats (seat_number, user_id, user_name, start_time)
        VALUES ($1, $2, $3, CURRENT_TIMESTAMP)`,
-            [seat, user_id, name]
+            [seat, locals.session.user.id_no, name]
         );
 
         // return new Response('좌석이 예약되었습니다.', { status: 201 });
@@ -119,26 +114,24 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         // console.error(err);
         // throw error(500, '내부 서버 오류입니다.');
         throw err;
+        // console.error('POST /api/reading-seats:', err);
+        // throw error(500, '좌석 예약에 실패했습니다.');
     }
 };
 
-export const DELETE: RequestHandler = async ({ request,locals }) => {
-      // 세션 검증
-  if (!locals.session.user) {
-    throw error(401, '인증되지 않은 사용자입니다.');
-  }
+export const DELETE: RequestHandler = async ({ request, locals }) => {
+    // 세션 검증
+    if (!locals.session.user) {
+        throw error(401, '인증되지 않은 사용자입니다.');
+    }
     try {
         const body = await request.json();
-        const { seat, user_id } = body;
+        const { seat } = body;
 
-        if (!seat || !user_id) {
+        if (!seat ) {
             // return new Response('좌석 번호 또는 사용자 ID가 누락되었습니다.', { status: 400 });
-            throw error(400, '좌석 번호 또는 사용자 ID가 누락되었습니다.');
+            throw error(400, '좌석 번호 가 누락되었습니다.');
         }
-
-        if (user_id !== locals.session.user.id_no) {
-            throw error(403, '잘못된 사용자 ID입니다.');
-          }
 
         // 본인 좌석인지 확인
         const check = await query(
@@ -158,9 +151,12 @@ export const DELETE: RequestHandler = async ({ request,locals }) => {
         );
 
         // return new Response(null, { status: 204 });
-        return json(null, { status: 201 });
+        return json({ message: '좌석이 퇴실되었습니다.' }, { status: 200 });
     } catch (err) {
-        console.error(err);
-        throw error(500, '내부 서버 오류입니다.');
+        // console.error(err);
+        // throw error(500, '내부 서버 오류입니다.');
+        throw err;
+    //     console.error('DELETE /api/reading-seats:', err);
+    // throw error(500, '좌석 퇴실에 실패했습니다.');
     }
 };

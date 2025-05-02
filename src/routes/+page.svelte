@@ -160,7 +160,7 @@
 				const res = await fetch('/api/reading-seats', {
 					method: 'DELETE',
 					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ seat: seatId, user_id: userId }),
+					body: JSON.stringify({ seat: seatId }),
 					credentials: 'include' // 쿠키 포함
 				});
 				if (!res.ok) {

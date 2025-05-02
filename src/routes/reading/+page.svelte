@@ -46,16 +46,18 @@
         // }
         credentials: 'include' // 쿠키 포함
       });
+      const data = await response.json();
       if (!response.ok) {
         // throw new Error(await response.text());
         if (response.status === 401) {
 					error = '세션이 만료되었습니다. 다시 로그인해주세요.';
+          auth.set({ isLoggedIn: false, id_no: null, user_name: null });
 					goto('/login');
 					return;
 				}
-				throw new Error('현황을 불러오지 못했습니다.');
+				throw new Error(data.message || '현황을 불러오지 못했습니다.');
       }
-      const data = await response.json();
+      
       usedSeats = data.usedSeats;
       mySeat = data.mySeat;
       error = null;
@@ -78,14 +80,20 @@
           const res = await fetch('/api/reading-seats', {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ seat, user_id: userId })
+            body: JSON.stringify({ seat }), // user_id 제거
+            credentials: 'include'
           });
+          const data = await res.json();
           if (!res.ok) {
-            // throw new Error(await res.text());
-            const data = await res.json();
-            alert(`퇴실 실패: ${data.message}`);
-					  return;
+            if (res.status === 401) {
+              error = '세션이 만료되었습니다. 다시 로그인해주세요.';
+              auth.set({ isLoggedIn: false, id_no: null, user_name: null });
+              goto('/login');
+              return;
+            }
+            throw new Error(data.message || '퇴실 실패');
           }
+          alert(data.message || '퇴실 완료');
           await fetchSeatStatus();
         }
       } else if (!usedSeats.includes(seat)) {
@@ -93,19 +101,31 @@
           const res = await fetch('/api/reading-seats', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ seat, user_id: userId, name: userName })
+            body: JSON.stringify({ seat, name: userName }),
+            credentials: 'include'
           });
+          // if (!res.ok) {
+          //   // throw new Error(await res.text());
+          //   const data = await res.json();
+          //   alert(`등록 실패: ${data.message}`);
+					//   return;
+          // }
+          const data = await res.json();
           if (!res.ok) {
-            // throw new Error(await res.text());
-            const data = await res.json();
-            alert(`등록 실패: ${data.message}`);
-					  return;
+            if (res.status === 401) {
+              error = '세션이 만료되었습니다. 다시 로그인해주세요.';
+              auth.set({ isLoggedIn: false, id_no: null, user_name: null });
+              goto('/login');
+              return;
+            }
+            throw new Error(data.message || '등록 실패');
           }
+          alert(data.message || '등록 완료');
           await fetchSeatStatus();
         }
       }
-    } catch (err: any) {
-      alert(`작업 실패: ${err.message}`);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : '작업 실패');
     }
   }
 
@@ -145,10 +165,11 @@
       const response = await fetch('/api/auth/verify', {
         credentials: 'include' // 쿠키/세션 포함
       });
-      if (!response.ok) {
-        throw new Error('인증 실패');
-      }
       const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || '인증 실패');
+      }
+
       auth.set({
         isLoggedIn: true,
         id_no: data.id_no,
@@ -157,7 +178,7 @@
       userId = data.id_no;
       userName = data.user_name;
       await fetchSeatStatus();
-      checkLocation();
+      // checkLocation();
     } catch (err) {
       error = '로그인이 필요합니다.';
       // 쿼리 파라미터로 리다이렉션 URL 유지
