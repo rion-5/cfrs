@@ -1,3 +1,4 @@
+<!-- src/routes/reading/+page.svelte -->
 <script lang="ts">
   import { onMount } from 'svelte';
   import { logout, auth } from '$lib/stores/auth';
@@ -40,19 +41,27 @@
     }
     try {
       const response = await fetch('/api/reading-seats', {
-        headers: {
-          'x-user-id': userId
-        }
+        // headers: {
+        //   'x-user-id': userId
+        // }
+        credentials: 'include' // 쿠키 포함
       });
       if (!response.ok) {
-        throw new Error(await response.text());
+        // throw new Error(await response.text());
+        if (response.status === 401) {
+					error = '세션이 만료되었습니다. 다시 로그인해주세요.';
+					goto('/login');
+					return;
+				}
+				throw new Error('현황을 불러오지 못했습니다.');
       }
       const data = await response.json();
       usedSeats = data.usedSeats;
       mySeat = data.mySeat;
       error = null;
-    } catch (err: any) {
-      error = err.message || '좌석 정보를 불러오지 못했습니다.';
+    } catch (err) {
+      // error = err.message || '좌석 정보를 불러오지 못했습니다.';
+      error = err instanceof Error ? err.message : '좌석 정보를 불러오지 못했습니다.';
     } finally {
       isLoading = false;
     }
@@ -72,7 +81,10 @@
             body: JSON.stringify({ seat, user_id: userId })
           });
           if (!res.ok) {
-            throw new Error(await res.text());
+            // throw new Error(await res.text());
+            const data = await res.json();
+            alert(`퇴실 실패: ${data.message}`);
+					  return;
           }
           await fetchSeatStatus();
         }
@@ -84,7 +96,10 @@
             body: JSON.stringify({ seat, user_id: userId, name: userName })
           });
           if (!res.ok) {
-            throw new Error(await res.text());
+            // throw new Error(await res.text());
+            const data = await res.json();
+            alert(`등록 실패: ${data.message}`);
+					  return;
           }
           await fetchSeatStatus();
         }
@@ -181,12 +196,13 @@
   {:else if error}
     <div class="text-center text-red-500">
       <p>{error}</p>
-      <button
-        class="mt-2 text-sm text-blue-600 hover:underline"
-        on:click={() => verifyAuth()}
-      >
-        재시도
-      </button>
+			{#if error.includes('세션이 만료')}
+				<a href="/login" class="mt-2 text-sm text-blue-600 hover:underline">로그인</a>
+			{:else}
+				<button class="mt-2 text-sm text-blue-600 hover:underline" on:click={() => verifyAuth()}>
+					재시도
+				</button>
+			{/if}
     </div>
   {:else}
     <!-- 상단 네비게이션 -->

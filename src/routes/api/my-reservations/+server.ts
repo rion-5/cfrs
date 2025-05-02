@@ -2,15 +2,14 @@
 import { json, error } from '@sveltejs/kit';
 import { query } from '$lib/server/db';
 import type { RequestHandler } from './$types';
-import { getSession } from '$lib/server/session';
 
-export const GET: RequestHandler = async ({ request, url }) => {
-  const session = await getSession(request);
-  if (!session.user) {
+export const GET: RequestHandler = async ({ url, locals }) => {
+  // 세션 검증
+  if (!locals.session.user) {
     throw error(401, '인증되지 않은 사용자입니다.');
   }
   const userId = url.searchParams.get('user_id');
-  if (userId !== session.user?.id_no) {
+  if (userId !== locals.session.user.id_no) {
     throw error(403, '잘못된 사용자 ID입니다.');
   }
 
@@ -24,7 +23,7 @@ export const GET: RequestHandler = async ({ request, url }) => {
        WHERE r.user_id = $1
          AND DATE(r.start_time) >= CURRENT_DATE
        ORDER BY r.start_time ASC`,
-      [userId]
+      [locals.session.user.id_no]
     );
 
     // 열람실 이용 현황 조회
@@ -34,12 +33,14 @@ export const GET: RequestHandler = async ({ request, url }) => {
        WHERE user_id = $1
          AND DATE(start_time) >= CURRENT_DATE
        ORDER BY start_time ASC`,
-      [userId]
+      [locals.session.user.id_no]
     );
 
     return json({ reservations, seatUsages });
   } catch (err) {
     console.error(err);
-    return json({ error: '내부 서버 오류입니다.' }, { status: 500 });
+    // return json({ error: '내부 서버 오류입니다.' }, { status: 500 });
+    throw error(500, '내부 서버 오류입니다.');
+
   }
 };

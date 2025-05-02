@@ -112,9 +112,11 @@
 	}
 
 	onMount(() => {
+		if (!browser) return; // 서버 사이드 렌더링에서는 실행 안 함
 		const $auth = get(auth);
 		if (!$auth.isLoggedIn) {
-			goto('/login?redirect=/study');
+			// goto('/login?redirect=/study');
+			verifyAuth(); // 서버에서 인증 확인
 		} else {
 			userId = $auth.id_no;
 			userName = $auth.user_name;
