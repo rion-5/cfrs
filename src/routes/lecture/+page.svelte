@@ -6,7 +6,7 @@
 	import Timetable from '$lib/components/Timetable.svelte';
 	import ReservationForm from '$lib/components/ReservationForm.svelte';
 	import { reservationStore } from '$lib/stores/reservation';
-	import { getKSTDate } from '$lib/utils/date';
+	import { getTodayKST,toKSTDateString } from '$lib/utils/date';
 	import type { ClassroomAvailability, ClassroomReservation, ReservationFormData } from '$lib/types';
 
 	// 상태 관리
@@ -18,8 +18,11 @@
 
 	// 빈 강의실 조회
 	async function fetchAvailability() {
+		// console.log(`formatKSTDate(selectedDate)} : ${formatKSTDate(selectedDate)}}`);
+		// console.log(`toKSTDateString(selectedDate)} : ${toKSTDateString(selectedDate)}}`);
+
 		const response = await fetch(
-			`/api/classroom-availability?date=${getKSTDate(selectedDate)}&start=${selectedTimeRange.start}&end=${selectedTimeRange.end}`
+			`/api/classroom-availability?date=${toKSTDateString(selectedDate)}&start=${selectedTimeRange.start}&end=${selectedTimeRange.end}`
 		);
 		if (!response.ok) {
 			alert('강의실 조회에 실패했습니다.');
@@ -32,6 +35,7 @@
 
 	// 예약 신청
 	async function handleReservation(data: ReservationFormData) {
+
 		const response = await fetch('/api/classroom-reservations', {
 			method: 'POST',
 			body: JSON.stringify(data),
@@ -69,7 +73,7 @@
 		</div>
 	{:else if view === 'timetable'}
 		<h1 class="text-2xl font-bold mb-4">
-			{getKSTDate(selectedDate)} 빈 강의실
+			{toKSTDateString(selectedDate)} 빈 강의실
 		</h1>
 		<button
 			class="mb-4 text-blue-500"

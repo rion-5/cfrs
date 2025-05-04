@@ -44,9 +44,3 @@ export function fromUTCtoKST(utc: string): Date {
   if (!isValid(date)) throw new Error('유효하지 않은 UTC 날짜입니다.');
   return new Date(date.getTime() + 9 * 60 * 60 * 1000);
 }
-
-// KST 날짜를 YYYY-MM-DD 형식으로 포맷 (강의실 예약용)
-export function formatKSTDate(date: Date): string {
-  const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
-  return format(kst, 'yyyy-MM-dd', { locale: ko });
-}
