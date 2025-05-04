@@ -6,7 +6,7 @@
 	import Timetable from '$lib/components/Timetable.svelte';
 	import ReservationForm from '$lib/components/ReservationForm.svelte';
 	import { reservationStore } from '$lib/stores/reservation';
-	import { getTodayKST,toKSTDateString } from '$lib/utils/date';
+	import { toKSTDateString } from '$lib/utils/date';
 	import type { ClassroomAvailability, ClassroomReservation, ReservationFormData } from '$lib/types';
 
 	// 상태 관리
