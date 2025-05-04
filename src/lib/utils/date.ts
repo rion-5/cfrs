@@ -44,3 +44,8 @@ export function fromUTCtoKST(utc: string): Date {
   if (!isValid(date)) throw new Error('유효하지 않은 UTC 날짜입니다.');
   return new Date(date.getTime() + 9 * 60 * 60 * 1000);
 }
+
+export function getKoreanDayOfWeek(date: Date): string {
+  const kst = getKSTDate(date);
+	return kst.toLocaleString('ko-KR', { weekday: 'long' }); // 예: 월요일
+}
