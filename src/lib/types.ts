@@ -108,3 +108,43 @@ export interface PyxisLoginData {
       isFamilyLogin: boolean
   }
 }
+export interface ClassroomReservation {
+	reservation_id: number;
+	classroom_id: string;
+	user_id: string;
+	purpose: string;
+	email: string | null;
+	tel: string | null;
+	attendees: number;
+	day_of_week: string;
+	start_time: string;
+	end_time: string;
+	reservation_date: string;
+	status: 'pending' | 'approved' | 'rejected';
+	created_at: string;
+}
+
+export interface ReservationFormData {
+	classroom_id: string;
+	user_id: string;
+	purpose: string;
+	attendees: number;
+	email: string | null;
+	tel: string | null;
+	start_time: string;
+	end_time: string;
+	reservation_date: string;
+}
+
+export interface ClassroomSlot {
+	start: string;
+	end: string;
+	available: boolean;
+}
+
+export interface ClassroomAvailability {
+	classroom_id: string;
+	room_number: string;
+	capacity: number;
+	slots: ClassroomSlot[];
+}

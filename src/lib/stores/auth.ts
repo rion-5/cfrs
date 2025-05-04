@@ -42,3 +42,10 @@ export async function logout() {
     console.error('로그아웃 에러:', err);
   }
 }
+export interface User {
+	user_id: string;
+	email?: string;
+	tel?: string;
+}
+
+export const authStore = writable<{ user: User | null }>({ user: null });
