@@ -1,26 +1,25 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import { authStore } from '$lib/stores/auth';
+	import { auth } from '$lib/stores/auth';
+	import { toKSTDateString } from '$lib/utils/date';
 	import type { ReservationFormData, ClassroomAvailability } from '$lib/types';
 	const dispatch = createEventDispatcher();
-	import {toKSTDateString} from '$lib/utils/date';
 
 	export let classroom: { classroom: ClassroomAvailability; slot: { start: string; end: string } };
 	export let date: Date;
 
 	let formData: ReservationFormData = {
 		classroom_id: classroom.classroom.classroom_id,
-		user_id: $authStore.user?.user_id || '',
+		user_id: $auth.id_no || '',
 		purpose: '',
 		attendees: 1,
-		email: $authStore.user?.email || '',
-		tel: $authStore.user?.tel || '',
+		email: $auth.email || '',
+		tel: $auth.tel || '',
 		start_time: classroom.slot.start,
 		end_time: classroom.slot.end,
-		// reservation_date: date.toISOString().split('T')[0]
 		reservation_date: toKSTDateString(date)
 	};
-  console.log(formData.reservation_date);
+
 	function submit() {
 		if (!formData.purpose || formData.attendees <= 0) {
 			alert('사용 목적과 이용 인원을 입력하세요.');
