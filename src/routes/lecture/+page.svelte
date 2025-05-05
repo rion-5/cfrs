@@ -6,21 +6,18 @@
 	import Timetable from '$lib/components/Timetable.svelte';
 	import ReservationForm from '$lib/components/ReservationForm.svelte';
 	import { reservationStore } from '$lib/stores/reservation';
-	import { toKSTDateString } from '$lib/utils/date';
+	import { getTodayKST, toKSTDateString } from '$lib/utils/date';
 	import type { ClassroomAvailability, ClassroomReservation, ReservationFormData } from '$lib/types';
 
 	// 상태 관리
 	let view: 'search' | 'timetable' | 'form' | 'confirmation' = 'search';
-	let selectedDate: Date = new Date();
+	let selectedDate: Date = new Date(getTodayKST());
 	let selectedTimeRange: { start: string; end: string } = { start: '08:00', end: '22:00' };
 	let selectedClassroom: { classroom: ClassroomAvailability; slot: { start: string; end: string } } | null = null;
 	let reservationResult: ClassroomReservation | null = null;
 
 	// 빈 강의실 조회
 	async function fetchAvailability() {
-		// console.log(`formatKSTDate(selectedDate)} : ${formatKSTDate(selectedDate)}}`);
-		// console.log(`toKSTDateString(selectedDate)} : ${toKSTDateString(selectedDate)}}`);
-
 		const response = await fetch(
 			`/api/classroom-availability?date=${toKSTDateString(selectedDate)}&start=${selectedTimeRange.start}&end=${selectedTimeRange.end}`
 		);
@@ -35,7 +32,6 @@
 
 	// 예약 신청
 	async function handleReservation(data: ReservationFormData) {
-
 		const response = await fetch('/api/classroom-reservations', {
 			method: 'POST',
 			body: JSON.stringify(data),
