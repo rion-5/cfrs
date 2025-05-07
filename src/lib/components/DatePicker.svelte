@@ -1,29 +1,38 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import { toKSTDateString } from '$lib/utils/date';
 	const dispatch = createEventDispatcher();
+
+	let _selectedDate = new Date(); // 내부 Date 객체
+
 	export let selectedDate: Date;
+	$: selectedDate = _selectedDate;
 
-	// Date 객체를 YYYY-MM-DD 문자열로 변환
-	$: dateString = toKSTDateString(selectedDate);
+	function formatDateToYYYYMMDD(date: Date): string {
+		const year = date.getFullYear();
+		const month = String(date.getMonth() + 1).padStart(2, '0');
+		const day = String(date.getDate()).padStart(2, '0');
+		return `${year}-${month}-${day}`;
+	}
 
-	function handleDateChange(event: Event) {
-		const input = event.target as HTMLInputElement;
-		const newDate = new Date(input.value);
-		if (!isNaN(newDate.getTime())) {
-			selectedDate = newDate;
-			dispatch('change', selectedDate);
-		}
+	function parseDateFromInput(value: string): Date {
+		return new Date(value + 'T00:00:00'); // 시간 보정
+	}
+
+	let dateString = formatDateToYYYYMMDD(_selectedDate);
+
+	// 반응형으로 동기화
+	$: {
+		_selectedDate = parseDateFromInput(dateString);
+		dispatch('change', dateString);
 	}
 </script>
 
 <div class="mb-4">
-	<label for="date" class="mb-1 block text-sm font-medium">날짜 선택</label>
+	<label for="date" class="block text-sm font-medium mb-1">날짜 선택</label>
 	<input
 		id="date"
 		type="date"
 		bind:value={dateString}
-		on:change={handleDateChange}
-		class="w-full rounded border p-2"
+		class="w-full p-2 border rounded"
 	/>
 </div>

@@ -21,7 +21,7 @@
 		}));
 
 	// 시간축: 9시 ~ 22시, 30분 단위
-	const hours = Array.from({ length: 14 }, (_, i) => 9 + i); // 9 to 22
+	const hours = Array.from({ length: 13 }, (_, i) => 9 + i); // 9 to 22
 	const timeSlots = hours.flatMap((hour) => [
 		{ start: `${hour.toString().padStart(2, '0')}:00`, end: `${hour.toString().padStart(2, '0')}:30` },
 		{ start: `${hour.toString().padStart(2, '0')}:30`, end: `${(hour + 1).toString().padStart(2, '0')}:00` }

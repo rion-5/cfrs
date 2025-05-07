@@ -80,7 +80,7 @@ SELECT
             WHERE cr.reservation_date = (SELECT query_date FROM input)
             AND cr.start_time < ts.slot_end_ts::time
             AND cr.end_time > ts.slot_start_ts::time
-            AND cr.status = 'approved'
+            AND cr.status in ('approved','pending')
             AND cr.classroom_id = c.classroom_id
         )
     ) AS available

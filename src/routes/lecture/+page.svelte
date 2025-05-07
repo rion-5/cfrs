@@ -11,7 +11,8 @@
 
 	// 상태 관리
 	let view: 'search' | 'timetable' | 'form' | 'confirmation' = 'search';
-	let selectedDate: Date = new Date(getTodayKST());
+	// let selectedDate: Date = new Date(getTodayKST());
+	let selectedDate: Date = new Date();
 	let selectedTimeRange: { start: string; end: string } = { start: '09:00', end: '22:00' };
 	let selectedClassroom: { classroom: ClassroomAvailability; slot: { start: string; end: string } } | null = null;
 	let reservationResult: ClassroomReservation | null = null;
@@ -26,6 +27,7 @@
 			return;
 		}
 		const data: ClassroomAvailability[] = await response.json();
+		console.log(data);
 		reservationStore.set({ availability: data });
 		view = 'timetable';
 	}
