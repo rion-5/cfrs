@@ -60,7 +60,7 @@
 				const $page = get(page);
 				const target = $page.url.searchParams.get('redirect') || '/';
 
-				console.log('리다이렉트 대상:', target);
+				// console.log('리다이렉트 대상:', target);
 				goto(target);
 			} else {
 				// Reset inputs and focus on loginId
