@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import { auth } from '$lib/stores/auth';
-	import { toKSTDateString } from '$lib/utils/date';
+	import { formatDateToYYYYMMDD } from '$lib/utils/date';
 	import type { ReservationFormData, ClassroomAvailability } from '$lib/types';
 	const dispatch = createEventDispatcher();
 
@@ -17,7 +17,7 @@
 		tel: $auth.tel || '',
 		start_time: classroom.slot.start,
 		end_time: classroom.slot.end,
-		reservation_date: toKSTDateString(date)
+		reservation_date: formatDateToYYYYMMDD(date)
 	};
 
 	function submit() {
