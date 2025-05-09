@@ -1,5 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { query } from '$lib/server/db';
+import {toKSTDateString} from '$lib/utils/date';
 
 export async function POST({ request }) {
 	const data = await request.json();
@@ -69,10 +70,10 @@ export async function POST({ request }) {
 		reservation_date
 	];
 	const result = await query(insertQuery, params);
-
+  
 	if (result.length === 0) {
 		return json({ error: '예약 신청에 실패했습니다.' }, { status: 500 });
 	}
-
+	result[0].reservation_date =toKSTDateString(result[0].reservation_date);
 	return json(result[0]);
 }
