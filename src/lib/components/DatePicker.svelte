@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
-	const dispatch = createEventDispatcher();
+	// import { createEventDispatcher, } from 'svelte';
+	// const dispatch = createEventDispatcher();
 	import {formatDateToYYYYMMDD} from '$lib/utils/date';
 
 	export let selectedDate: Date;
@@ -10,10 +10,11 @@
 	function handleDateChange(event: Event) {
 		const input = event.target as HTMLInputElement;
 		const newDate = new Date(input.value);
-		if (!isNaN(newDate.getTime())) {
-			selectedDate = newDate;
-			dispatch('change', selectedDate);
-		}
+			// ✅ 최신 방식: dispatchEvent 사용
+			dispatchEvent(new CustomEvent('change', {
+				detail: newDate,
+				bubbles: true // 부모 컴포넌트가 이벤트를 받을 수 있도록 설정
+			}));
 	}
 
 </script>
