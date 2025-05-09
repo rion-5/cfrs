@@ -1,26 +1,28 @@
 <!-- src/lib/components/DataPicker.svelte -->
 <script lang="ts">
-	// import { createEventDispatcher, } from 'svelte';
-	// const dispatch = createEventDispatcher();
+	import { createEventDispatcher } from 'svelte';
 	import { formatDateToYYYYMMDD } from '$lib/utils/date';
 
+	const dispatch = createEventDispatcher();
 	export let selectedDate: Date;
 
 	// Date 객체를 YYYY-MM-DD 문자열로 변환
 	$: dateString = formatDateToYYYYMMDD(selectedDate);
 
+	// KST 기준 오늘 날짜
 	const today = formatDateToYYYYMMDD(new Date());
 
 	function handleDateChange(event: Event) {
 		const input = event.target as HTMLInputElement;
 		const newDate = new Date(input.value);
-		// ✅ 최신 방식: dispatchEvent 사용
-		dispatchEvent(
-			new CustomEvent('change', {
-				detail: newDate,
-				bubbles: true // 부모 컴포넌트가 이벤트를 받을 수 있도록 설정
-			})
-		);
+		if (!isNaN(newDate.getTime()) && input.value >= today) {
+			selectedDate = newDate;
+			dispatch('change', selectedDate);
+		} else {
+			// 오늘 이전 날짜 선택 시 오늘로 재설정
+			selectedDate = new Date(today);
+			dispatch('change', selectedDate);
+		}
 	}
 </script>
 
@@ -35,6 +37,6 @@
 		class="w-full rounded border p-2"
 	/>
 	{#if dateString < today}
-		<p class="absolute top-full left-0 text-sm text-red-500">오늘 이후 날짜를 선택하세요.</p>
+		<p class="text-sm text-red-500">오늘 이후 날짜를 선택하세요.</p>
 	{/if}
 </div>

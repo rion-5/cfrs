@@ -15,14 +15,18 @@
 
 	// 상태 관리
 	let view: 'search' | 'timetable' | 'form' | 'confirmation' = 'search';
-	// let selectedDate: Date = new Date(getTodayKST());
-	let selectedDate: Date = new Date();
+	let selectedDate: Date = new Date(); // KST 오늘 날짜 (브라우저 시간대)
 	let selectedTimeRange: { start: string; end: string } = { start: '09:00', end: '22:00' };
 	let selectedClassroom: {
 		classroom: ClassroomAvailability;
 		slot: { start: string; end: string };
 	} | null = null;
 	let reservationResult: ClassroomReservation | null = null;
+
+	// DatePicker change 이벤트 처리
+	function handleDateChange(event: CustomEvent<Date>) {
+		selectedDate = event.detail;
+	}
 
 	// 빈 강의실 조회
 	async function fetchAvailability() {
@@ -34,7 +38,6 @@
 			return;
 		}
 		const data: ClassroomAvailability[] = await response.json();
-		console.log(data);
 		reservationStore.set({ availability: data });
 		view = 'timetable';
 	}
@@ -64,7 +67,7 @@
 <main class="container mx-auto p-4">
 	{#if view === 'search'}
 		<h1 class="mb-4 text-2xl font-bold">강의실 예약</h1>
-		<DatePicker bind:selectedDate />
+		<DatePicker bind:selectedDate on:change={handleDateChange} />
 		<TimeSlider bind:selectedTimeRange />
 		<button class="mt-4 w-full rounded bg-blue-500 py-2 text-white" on:click={fetchAvailability}>
 			빈 강의실 찾기
@@ -77,8 +80,9 @@
 		<h1 class="mb-4 text-2xl font-bold">
 			{formatDateToYYYYMMDD(selectedDate)} 빈 강의실
 		</h1>
-		<button class="mb-4 text-blue-500" on:click={() => (view = 'search')}> 검색 수정 </button>
+		<button class="mb-4 text-blue-500" on:click={() => (view = 'search')}>검색 수정</button>
 		<Timetable
+			{selectedDate}
 			on:select={({ detail }) => {
 				selectedClassroom = detail;
 				view = 'form';
