@@ -1,10 +1,15 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
-	const dispatch = createEventDispatcher();
+	// import { createEventDispatcher } from 'svelte';
+	// const dispatch = createEventDispatcher();
 	export let selectedTimeRange: { start: string; end: string };
 
 	function handleChange() {
-		dispatch('change', selectedTimeRange);
+		// dispatch('change', selectedTimeRange);
+					// ✅ 최신 방식: dispatchEvent 사용
+					dispatchEvent(new CustomEvent('change', {
+				detail: selectedTimeRange,
+				bubbles: true // 부모 컴포넌트가 이벤트를 받을 수 있도록 설정
+			}));
 	}
 </script>
 
