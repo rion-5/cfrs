@@ -32,7 +32,7 @@
 			{#if !isRoot}
 				<button on:click={() => goto('/')} class="text-sm text-blue-600 hover:underline">← Home</button>
 			{:else}
-				<span></span> <!-- 빈 공간 -->
+				<div class="text-sm sm:text-base font-semibold text-gray-800">{$auth.user_name} 님</div>
 			{/if}
 			<button class="text-sm text-red-500 hover:underline" on:click={handleLogout}>로그아웃</button>
 		</div>
