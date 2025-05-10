@@ -1,3 +1,5 @@
+// src/routes/api/auth/verify/+server.ts
+
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getSession } from '$lib/server/session';

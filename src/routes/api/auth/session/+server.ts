@@ -1,3 +1,5 @@
+// src/routes/api/auth/session/+server.ts
+
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import {setSession } from '$lib/server/session';
