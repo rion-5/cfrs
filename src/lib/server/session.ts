@@ -52,8 +52,8 @@ export function setSession(cookies: Cookies, user: { id_no: string; user_name: s
 		httpOnly: true,
 		// secure: true, // HTTPS 강제
 		sameSite: 'strict',
-		maxAge: 2 * 60 * 60 // 2시간
-    // maxAge: 1 * 60 // 1분
+		// maxAge: 2 * 60 * 60 // 2시간
+    maxAge: 1 * 60 // 1분
 	});
 }
 
@@ -74,8 +74,8 @@ export function extendSession(cookies: Cookies) {
 			httpOnly: true,
 			// secure: true,
 			sameSite: 'strict',
-			maxAge: 2 * 60 * 60 // 2시간 연장
-      // maxAge: 1 * 60 // 1분 연장
+			// maxAge: 2 * 60 * 60 // 2시간 연장
+      maxAge: 1 * 60 // 1분 연장
 		});
 		return true;
 	} catch (err) {

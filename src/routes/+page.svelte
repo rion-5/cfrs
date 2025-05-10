@@ -13,6 +13,41 @@
 	let seatUsages: MySeatUsage[] = [];
 	let isLoading = true; // 로딩 상태 추가
 	let error: string | null = null; // 에러 상태 추가
+	let sessionTimeout: NodeJS.Timeout | null = null;
+	let sessionWarning = false;
+
+	// 세션 타이머 시작 (2시간)
+	function startSessionTimer() {
+		if (sessionTimeout) clearTimeout(sessionTimeout);
+		sessionTimeout = setTimeout(() => {
+			sessionWarning = true;
+			setTimeout(() => {
+				if (!sessionWarning) return;
+				logout();
+				goto('/login?redirect=/');
+				// 	}, 5 * 60 * 1000); // 5분 후 로그아웃
+				// }, 115 * 60 * 1000); // 115분
+			}, 10 * 1000); // 10초 후 로그아웃
+		}, 50 * 1000); // 50초
+	}
+
+	// 세션 연장
+	async function extendSession() {
+		try {
+			const response = await fetch('/api/auth/extend', { credentials: 'include' });
+			if (!response.ok) throw new Error('세션 연장 실패');
+			sessionWarning = false;
+			startSessionTimer();
+		} catch (err) {
+			logout();
+			goto('/login?redirect=/');
+		}
+	}
+
+	// 사용자 활동 시 타이머 리셋
+	function resetSessionTimer() {
+		if (userId) startSessionTimer();
+	}
 
 	const handleSelect = (type: 'STUDY' | 'READING' | 'LECTURE') => {
 		goto(`/${type.toLowerCase()}`);
@@ -42,6 +77,7 @@
 			reservations = data.reservations;
 			seatUsages = data.seatUsages;
 			error = null;
+			resetSessionTimer();
 		} catch (err) {
 			error = err instanceof Error ? err.message : '데이터를 불러오지 못했습니다.';
 		} finally {
@@ -98,6 +134,7 @@
 			userId = data.id_no;
 			userName = data.user_name;
 			await fetchData();
+			startSessionTimer();
 		} catch (err) {
 			error = '로그인이 필요합니다.';
 			const redirect = new URLSearchParams(window.location.search).get('redirect') || '/';
@@ -117,6 +154,16 @@
 			userName = $auth.user_name;
 			fetchData();
 		}
+		// 사용자 활동 감지
+		['click', 'mousemove', 'keydown'].forEach((event) =>
+			window.addEventListener(event, resetSessionTimer)
+		);
+		return () => {
+			if (sessionTimeout) clearTimeout(sessionTimeout);
+			['click', 'mousemove', 'keydown'].forEach((event) =>
+				window.removeEventListener(event, resetSessionTimer)
+			);
+		};
 	});
 
 	function getStatus(item: MyReservation | MySeatUsage) {
@@ -184,6 +231,16 @@
 </script>
 
 <main class="mx-auto max-w-md space-y-8 p-6 text-center text-neutral-800">
+	<!-- 세션 만료 경고 -->
+	{#if sessionWarning}
+		<div class="fixed top-4 left-1/2 -translate-x-1/2 transform rounded bg-yellow-100 p-4 shadow">
+			<p>5분 후 세션이 만료됩니다.</p>
+			<button on:click={extendSession} class="mt-2 rounded bg-blue-500 px-2 py-1 text-white">
+				세션 연장
+			</button>
+		</div>
+	{/if}
+	<!-- 로딩 및 에러 UI -->
 	{#if isLoading}
 		<div class="text-center">
 			<p>로딩 중...</p>

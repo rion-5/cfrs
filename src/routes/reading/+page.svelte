@@ -13,6 +13,8 @@
   let userInZone = false;
   let isLoading = true; // 로딩 상태 추가
   let error: string | null = null; // 에러 상태 추가
+  let sessionTimeout: NodeJS.Timeout | null = null;
+	let sessionWarning = false;
 
   const map = [
     [1, 2, 3, 4, 5, null, 6, 7, null, 51],
@@ -28,6 +30,38 @@
     [null, null, null, null, null, null, null, null, null, null],
     [null, null, 48, 49, 50, null, null, null, null, null]
   ];
+	// 세션 타이머 시작 (2시간)
+	function startSessionTimer() {
+		if (sessionTimeout) clearTimeout(sessionTimeout);
+		sessionTimeout = setTimeout(() => {
+			sessionWarning = true;
+			setTimeout(() => {
+				if (!sessionWarning) return;
+				logout();
+				goto('/login?redirect=/reading');
+		// 	}, 5 * 60 * 1000); // 5분 후 로그아웃
+		// }, 115 * 60 * 1000); // 115분
+				}, 10 * 1000); // 10초 후 로그아웃
+			}, 50 * 1000); // 50초
+	}
+
+	// 세션 연장
+	async function extendSession() {
+		try {
+			const response = await fetch('/api/auth/extend', { credentials: 'include' });
+			if (!response.ok) throw new Error('세션 연장 실패');
+			sessionWarning = false;
+			startSessionTimer();
+		} catch (err) {
+			logout();
+			goto('/login?redirect=/reading');
+		}
+	}
+
+	// 사용자 활동 시 타이머 리셋
+	function resetSessionTimer() {
+		if (userId) startSessionTimer();
+	}
 
   function goHome() {
     goto('/');
@@ -61,6 +95,8 @@
       usedSeats = data.usedSeats;
       mySeat = data.mySeat;
       error = null;
+      resetSessionTimer();
+
     } catch (err) {
       // error = err.message || '좌석 정보를 불러오지 못했습니다.';
       error = err instanceof Error ? err.message : '좌석 정보를 불러오지 못했습니다.';
@@ -177,6 +213,7 @@
       });
       userId = data.id_no;
       userName = data.user_name;
+      startSessionTimer();
       await fetchSeatStatus();
       // checkLocation();
     } catch (err) {
@@ -197,9 +234,20 @@
     } else {
       userId = $auth.id_no;
       userName = $auth.user_name;
+      startSessionTimer();
       fetchSeatStatus();
       // checkLocation();
     }
+    		// 사용자 활동 감지
+		['click', 'mousemove', 'keydown'].forEach((event) =>
+			window.addEventListener(event, resetSessionTimer)
+		);
+		return () => {
+			if (sessionTimeout) clearTimeout(sessionTimeout);
+			['click', 'mousemove', 'keydown'].forEach((event) =>
+				window.removeEventListener(event, resetSessionTimer)
+			);
+		};
   });
 
   function handleLogout() {
@@ -209,6 +257,15 @@
 </script>
 
 <main class="mx-auto max-w-screen-md space-y-8 px-4 py-6 text-center text-neutral-800 sm:px-6 lg:px-8">
+	<!-- 세션 만료 경고 -->
+	{#if sessionWarning}
+		<div class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-yellow-100 p-4 rounded shadow">
+			<p>5분 후 세션이 만료됩니다.</p>
+			<button on:click={extendSession} class="mt-2 bg-blue-500 text-white px-2 py-1 rounded">
+				세션 연장
+			</button>
+		</div>
+	{/if}
   <!-- 로딩 및 에러 UI -->
   {#if isLoading}
     <div class="text-center">
