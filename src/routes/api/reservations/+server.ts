@@ -18,9 +18,9 @@ export const GET: RequestHandler = async ({ url, locals }) => {
     const result = await query(
       `SELECT id, room_id, user_id, start_time, end_time
        FROM reservation
-       WHERE DATE(start_time) = $1 AND user_id = $2
+       WHERE DATE(start_time) = $1 
        ORDER BY room_id, start_time`,
-      [inquery_date, locals.session.user.id_no]
+      [inquery_date]
     );
     return json(result);
   } catch (err) {

@@ -38,7 +38,9 @@
 			const result = await login(params);
 			const dept_code = result.data?.parentDept?.code;
 			// console.log(JSON.stringify(result, null, 2));
-			if (result.success && (dept_code === 'Y0000502' || dept_code === 'Y0001097')) {
+			// if (result.success && (dept_code === 'Y0000502' || dept_code === 'Y0001097')) {
+			if (result.success) {   //test
+
 				auth.set({
 					isLoggedIn: true,
 					user_name: result.data.name,
