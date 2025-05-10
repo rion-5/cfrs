@@ -148,3 +148,4 @@ export interface ClassroomAvailability {
 	capacity: number;
 	slots: ClassroomSlot[];
 }
+

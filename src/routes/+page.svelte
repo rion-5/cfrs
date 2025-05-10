@@ -1,9 +1,7 @@
 <!-- src/routes/+page.svelte -->
 <script lang="ts">
-	import { auth, logout } from '$lib/stores/auth';
+	import { auth } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
-	import { get } from 'svelte/store';
-	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import type { MyReservation, MySeatUsage } from '$lib/types';
 
@@ -11,83 +9,35 @@
 	let userName: string | null;
 	let reservations: MyReservation[] = [];
 	let seatUsages: MySeatUsage[] = [];
-	let isLoading = true; // 로딩 상태 추가
-	let error: string | null = null; // 에러 상태 추가
-	let sessionTimeout: NodeJS.Timeout | null = null;
-	let sessionWarning = false;
+	let error: string | null = null;
 
-	// 세션 타이머 시작 (2시간)
-	function startSessionTimer() {
-		if (sessionTimeout) clearTimeout(sessionTimeout);
-		sessionTimeout = setTimeout(() => {
-			sessionWarning = true;
-			setTimeout(() => {
-				if (!sessionWarning) return;
-				logout();
-				goto('/login?redirect=/');
-					}, 5 * 60 * 1000); // 5분 후 로그아웃
-				}, 115 * 60 * 1000); // 115분
-		// 	}, 10 * 1000); // 10초 후 로그아웃
-		// }, 50 * 1000); // 50초
-	}
-
-	// 세션 연장
-	async function extendSession() {
-		try {
-			const response = await fetch('/api/auth/extend', { credentials: 'include' });
-			if (!response.ok) throw new Error('세션 연장 실패');
-			sessionWarning = false;
-			startSessionTimer();
-		} catch (err) {
-			logout();
-			goto('/login?redirect=/');
-		}
-	}
-
-	// 사용자 활동 시 타이머 리셋
-	function resetSessionTimer() {
-		if (userId) startSessionTimer();
-	}
-
-	const handleSelect = (type: 'STUDY' | 'READING' | 'LECTURE') => {
+	function handleSelect(type: 'STUDY' | 'READING' | 'LECTURE') {
 		goto(`/${type.toLowerCase()}`);
-	};
+	}
 
 	async function fetchData() {
 		if (!userId) {
 			error = '로그인이 필요합니다.';
-			isLoading = false;
 			return;
 		}
 		try {
 			const res = await fetch(`/api/my-reservations`, {
-				credentials: 'include' // 쿠키 포함
+				credentials: 'include'
 			});
 			const data = await res.json();
 			if (!res.ok) {
 				if (res.status === 401) {
 					error = '세션이 만료되었습니다. 다시 로그인해주세요.';
-					auth.set({ isLoggedIn: false, id_no: null, user_name: null });
-					goto('/login');
 					return;
 				}
 				throw new Error(data.message || '예약 조회에 실패했습니다.');
 			}
-
 			reservations = data.reservations;
 			seatUsages = data.seatUsages;
 			error = null;
-			resetSessionTimer();
 		} catch (err) {
 			error = err instanceof Error ? err.message : '데이터를 불러오지 못했습니다.';
-		} finally {
-			isLoading = false;
 		}
-	}
-
-	function handleLogout() {
-		logout();
-		goto('/login');
 	}
 
 	function formatKSTRange(start: string, end?: string): string {
@@ -97,74 +47,19 @@
 			day: 'numeric',
 			weekday: 'short'
 		});
-
 		const startTime = startDate.toLocaleTimeString('ko-KR', {
 			hour: '2-digit',
 			minute: '2-digit',
 			hour12: false
 		});
-
 		if (!end) return `${date} ${startTime} ~ 사용중`;
-
 		const endTime = new Date(end).toLocaleTimeString('ko-KR', {
 			hour: '2-digit',
 			minute: '2-digit',
 			hour12: false
 		});
-
 		return `${date} ${startTime} ~ ${endTime}`;
 	}
-
-	// 서버에서 인증 상태 확인
-	async function verifyAuth() {
-		isLoading = true;
-		try {
-			const response = await fetch('/api/auth/verify', {
-				credentials: 'include' // 쿠키 포함
-			});
-			if (!response.ok) {
-				throw new Error('인증 실패');
-			}
-			const data = await response.json();
-			auth.set({
-				isLoggedIn: true,
-				id_no: data.id_no,
-				user_name: data.user_name
-			});
-			userId = data.id_no;
-			userName = data.user_name;
-			await fetchData();
-			startSessionTimer();
-		} catch (err) {
-			error = '로그인이 필요합니다.';
-			const redirect = new URLSearchParams(window.location.search).get('redirect') || '/';
-			goto(`/login?redirect=${encodeURIComponent(redirect)}`);
-		} finally {
-			isLoading = false;
-		}
-	}
-
-	onMount(() => {
-		if (!browser) return;
-		const $auth = get(auth);
-		if (!$auth.isLoggedIn) {
-			verifyAuth(); // 서버 세션 확인
-		} else {
-			userId = $auth.id_no;
-			userName = $auth.user_name;
-			fetchData();
-		}
-		// 사용자 활동 감지
-		['click', 'mousemove', 'keydown'].forEach((event) =>
-			window.addEventListener(event, resetSessionTimer)
-		);
-		return () => {
-			if (sessionTimeout) clearTimeout(sessionTimeout);
-			['click', 'mousemove', 'keydown'].forEach((event) =>
-				window.removeEventListener(event, resetSessionTimer)
-			);
-		};
-	});
 
 	function getStatus(item: MyReservation | MySeatUsage) {
 		const now = new Date();
@@ -172,7 +67,6 @@
 		const end = item.end_time ? new Date(item.end_time) : null;
 		const actualEnd =
 			'actual_end_time' in item && item.actual_end_time ? new Date(item.actual_end_time) : null;
-
 		if (actualEnd) return '완료';
 		if (end && now >= end) return '완료';
 		if (now >= start) return '사용중';
@@ -186,12 +80,11 @@
 					method: 'DELETE',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({ id: reservationId, user_id: userId }),
-					credentials: 'include' // 쿠키 포함
+					credentials: 'include'
 				});
 				if (!res.ok) {
 					if (res.status === 401) {
 						error = '세션이 만료되었습니다. 다시 로그인해주세요.';
-						goto('/login');
 						return;
 					}
 					throw new Error('예약 취소에 실패했습니다.');
@@ -211,12 +104,11 @@
 					method: 'DELETE',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({ seat: seatId }),
-					credentials: 'include' // 쿠키 포함
+					credentials: 'include'
 				});
 				if (!res.ok) {
 					if (res.status === 401) {
 						error = '세션이 만료되었습니다. 다시 로그인해주세요.';
-						goto('/login');
 						return;
 					}
 					throw new Error('퇴실을 실패했습니다.');
@@ -228,46 +120,22 @@
 			}
 		}
 	}
+
+	$: {
+		userId = $auth.id_no;
+		userName = $auth.user_name;
+		if (userId && browser) {
+			fetchData();
+		}
+	}
 </script>
 
 <main class="mx-auto max-w-md space-y-8 p-6 text-center text-neutral-800">
-	<!-- 세션 만료 경고 -->
-	{#if sessionWarning}
-		<div class="fixed top-4 left-1/2 -translate-x-1/2 transform rounded bg-yellow-100 p-4 shadow">
-			<p>5분 후 세션이 만료됩니다.</p>
-			<button on:click={extendSession} class="mt-2 rounded bg-blue-500 px-2 py-1 text-white">
-				세션 연장
-			</button>
-		</div>
-	{/if}
-	<!-- 로딩 및 에러 UI -->
-	{#if isLoading}
-		<div class="text-center">
-			<svg class="animate-spin h-5 w-5 mx-auto" viewBox="0 0 24 24">
-				<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-				<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-			</svg>
-			<p>로딩 중...</p>
-		</div>
-	{:else if error}
-		<div class="text-center text-red-500">
+	{#if error}
+		<div class="text-center text-red-500 bg-red-100 p-4 rounded">
 			<p>{error}</p>
-			{#if error.includes('세션이 만료')}
-				<a href="/login" class="mt-2 text-sm text-blue-600 hover:underline">로그인</a>
-			{:else}
-				<button class="mt-2 text-sm text-blue-600 hover:underline" on:click={() => verifyAuth()}>
-					재시도
-				</button>
-			{/if}
 		</div>
 	{:else}
-		<div class="flex items-center justify-between p-4">
-			<div class="text-lg font-semibold">{userName} 님</div>
-			<button class="text-sm text-red-500 hover:underline" on:click={handleLogout}>
-				로그아웃
-			</button>
-		</div>
-
 		<div class="text-base text-neutral-600">어떤 공간을 예약하시겠어요?</div>
 
 		<div class="grid grid-cols-3 gap-4">
@@ -296,14 +164,12 @@
 
 		<div class="mt-6 space-y-4">
 			<h2 class="text-left text-base font-semibold">💬 토론실 예약 현황</h2>
-
 			{#if reservations.length > 0}
 				<div class="space-y-2">
 					{#each reservations as r}
 						<div
 							class="flex items-center justify-between space-x-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm"
 						>
-							<!-- 상태 -->
 							<div
 								class="min-w-[56px] rounded px-2 py-1 text-center text-xs font-semibold text-white"
 								class:bg-blue-500={getStatus(r) === '예약중'}
@@ -312,16 +178,12 @@
 							>
 								{getStatus(r)}
 							</div>
-
-							<!-- 호실명 + 날짜/시간 -->
 							<div class="flex-1 text-left">
 								<div class="font-semibold">토론실 {r.room_name}</div>
 								<div class="text-xs text-gray-500">
 									{formatKSTRange(r.start_time, r.end_time)}
 								</div>
 							</div>
-
-							<!-- 버튼 -->
 							<div class="flex items-center space-x-1">
 								{#if getStatus(r) === '예약중'}
 									<button
@@ -340,14 +202,12 @@
 			{/if}
 
 			<h2 class="text-left text-base font-semibold">📖 열람실 이용 현황</h2>
-
 			{#if seatUsages.length > 0}
 				<div class="space-y-2">
 					{#each seatUsages as s}
 						<div
 							class="flex items-center justify-between space-x-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm"
 						>
-							<!-- 상태 -->
 							<div
 								class="min-w-[56px] rounded px-2 py-1 text-center text-xs font-semibold text-white"
 								class:bg-blue-500={getStatus(s) === '예약중'}
@@ -356,16 +216,12 @@
 							>
 								{getStatus(s)}
 							</div>
-
-							<!-- 좌석 번호 + 날짜/시간 -->
 							<div class="flex-1 text-left">
 								<div class="font-semibold">좌석 {s.seat_number}</div>
 								<div class="text-xs text-gray-500">
 									{formatKSTRange(s.start_time, s.end_time)}
 								</div>
 							</div>
-
-							<!-- 버튼 -->
 							<div class="flex items-center space-x-1">
 								{#if getStatus(s) === '예약중' || getStatus(s) === '사용중'}
 									<button
