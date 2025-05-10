@@ -32,8 +32,14 @@
 			{#if !isRoot}
 				<button on:click={() => goto('/')} class="text-sm text-blue-600 hover:underline">← Home</button>
 			{:else}
-				<div class="text-sm sm:text-base font-semibold text-gray-800">{$auth.user_name} 님</div>
-			{/if}
+				<!-- <div class="text-sm sm:text-base font-semibold text-gray-800">{$auth.user_name} 님</div> -->
+			     <div class="flex items-center space-x-1 text-sm font-semibold text-gray-800">
+       <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+         <path d="M10 10a4 4 0 100-8 4 4 0 000 8zm0 2c-4.42 0-8 1.79-8 4v2h16v-2c0-2.21-3.58-4-8-4z" />
+       </svg>
+       <span>{$auth.user_name} 님</span>
+     </div>
+				{/if}
 			<button class="text-sm text-red-500 hover:underline" on:click={handleLogout}>로그아웃</button>
 		</div>
 	{/if}
