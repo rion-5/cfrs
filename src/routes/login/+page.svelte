@@ -105,7 +105,7 @@
 	}
 </script>
 
-<main class="flex min-h-screen items-start justify-center bg-gray-100">
+<main class="flex min-h-screen items-start justify-center">
 	<div class="mt-40 w-full max-w-sm rounded-xl bg-white p-6 shadow-md">
 		<h2 class="mb-4 text-center text-xl font-semibold">Login</h2>
 		<input
