@@ -17,7 +17,7 @@
 
 	// 상태 관리
 	let view: 'search' | 'timetable' | 'form' | 'confirmation' = 'search';
-	let selectedDate: Date = new Date(); // KST 오늘 날짜
+	let selectedDate: Date = new Date();
 	let selectedTimeRange: { start: string; end: string } = { start: '09:00', end: '22:00' };
 	let selectedClassroom: {
 		classroom: ClassroomAvailability;
@@ -36,24 +36,37 @@
 		}
 	}
 
-	// 빈 강의실 조회
+	// 빈 강의실 및 예약 정보 조회
 	async function fetchAvailability() {
 		isLoading = true;
 		try {
-			const response = await fetch(
+			// 가용성 조회
+			const availResponse = await fetch(
 				`/api/classroom-availability?date=${formatDateToYYYYMMDD(selectedDate)}&start=${selectedTimeRange.start}&end=${selectedTimeRange.end}`,
 				{ credentials: 'include' }
 			);
-			if (!response.ok) {
-				if (response.status === 401) {
+			if (!availResponse.ok) {
+				if (availResponse.status === 401) {
 					error = '세션이 만료되었습니다. 다시 로그인해주세요.';
 					return;
 				}
-				const errorData = await response.json();
+				const errorData = await availResponse.json();
 				throw new Error(errorData.error || '강의실 조회에 실패했습니다.');
 			}
-			const data: ClassroomAvailability[] = await response.json();
-			reservationStore.set({ availability: data });
+			const availData: ClassroomAvailability[] = await availResponse.json();
+
+			// 예약 정보 조회
+			const resResponse = await fetch(
+				`/api/classroom-reservations?date=${formatDateToYYYYMMDD(selectedDate)}&start=${selectedTimeRange.start}&end=${selectedTimeRange.end}`,
+				{ credentials: 'include' }
+			);
+			if (!resResponse.ok) {
+				const errorData = await resResponse.json();
+				throw new Error(errorData.error || '예약 조회에 실패했습니다.');
+			}
+			const resData: ClassroomReservation[] = await resResponse.json();
+
+			reservationStore.set({ availability: availData, reservations: resData });
 			view = 'timetable';
 			error = null;
 		} catch (err) {
@@ -92,6 +105,34 @@
 		}
 	}
 
+	// 예약 취소
+	async function handleCancel(reservationId: number) {
+		if (!userId) {
+			error = '로그인이 필요합니다.';
+			return;
+		}
+		isLoading = true;
+		try {
+			const response = await fetch(
+				`/api/classroom-reservations?reservation_id=${reservationId}`,
+				{
+					method: 'DELETE',
+					credentials: 'include'
+				}
+			);
+			if (!response.ok) {
+				const errorData = await response.json();
+				throw new Error(errorData.error || '예약 취소에 실패했습니다.');
+			}
+			await fetchAvailability(); // 시간표 갱신
+			error = null;
+		} catch (err) {
+			error = err instanceof Error ? err.message : '예약 취소에 실패했습니다.';
+		} finally {
+			isLoading = false;
+		}
+	}
+
 	// 내 예약 내역으로 이동
 	function goToMyReservations() {
 		goto('/my-reservations');
@@ -105,7 +146,7 @@
 	$: {
 		userId = $auth.id_no;
 		if (userId && browser && view === 'search') {
-			// 초기 데이터 로드 방지, 사용자 입력 후 fetchAvailability 호출
+			// 초기 데이터 로드 방지
 		}
 	}
 </script>
@@ -125,7 +166,7 @@
 		</div>
 	{:else}
 		{#if view === 'search'}
-			<h1 class="mb-4 text-2xl font-bold">강의실 예약</h1>
+			<h1 class="mb-4 text-2xl font-bold text-center">강의실 예약</h1>
 			<DatePicker bind:selectedDate on:change={handleDateChange} />
 			<TimeSlider bind:selectedTimeRange />
 			<button class="mt-4 w-full rounded bg-blue-500 py-2 text-white" on:click={fetchAvailability}>
@@ -133,7 +174,6 @@
 			</button>
 			<div class="mt-2 flex justify-between">
 				<a href="/my-reservations" class="text-blue-500">내 예약 내역</a>
-				<a href="/lecture" class="text-blue-500">오늘의 빈 강의실</a>
 			</div>
 		{:else if view === 'timetable'}
 			<h1 class="mb-4 text-2xl font-bold">
@@ -142,10 +182,12 @@
 			<button class="mb-4 text-blue-500" on:click={() => (view = 'search')}>검색 수정</button>
 			<Timetable
 				{selectedDate}
+				userId={userId}
 				on:select={({ detail }) => {
 					selectedClassroom = detail;
 					view = 'form';
 				}}
+				on:cancel={({ detail }) => handleCancel(detail.reservationId)}
 			/>
 		{:else if view === 'form' && selectedClassroom}
 			<h1 class="mb-4 text-2xl font-bold">예약 신청</h1>

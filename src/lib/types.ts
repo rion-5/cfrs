@@ -8,8 +8,10 @@ export interface LoginParam {
 
 // 세션 데이터 타입
 export interface Session {
-  id_no: string;
-  user_name: string;
+  user: {
+    id_no: string;
+    user_name?: string; // 선택적, 실제 세션 데이터에 따라 추가
+  };
 }
 
 export interface UserStatus {
@@ -149,3 +151,7 @@ export interface ClassroomAvailability {
 	slots: ClassroomSlot[];
 }
 
+export interface ReservationStore {
+	availability: ClassroomAvailability[];
+	reservations: ClassroomReservation[];
+}
