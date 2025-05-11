@@ -32,7 +32,7 @@ export async function GET({ url }) {
 			AND (classroom_id = $2 OR $2 IS NULL)
 			AND start_time >= $3
 			AND end_time <= $4
-			AND status IN ('approved', 'pending')
+			AND status IN ('approved', 'pending', 'rejected')
 		ORDER BY classroom_id, start_time;
 	`;
 	const params = [date, classroomId || null, startTime, endTime];
