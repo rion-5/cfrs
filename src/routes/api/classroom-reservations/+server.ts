@@ -1,3 +1,4 @@
+// src/routes/api/classroom-reservations/+server.ts
 import { json } from '@sveltejs/kit';
 import { query } from '$lib/server/db';
 import { toKSTDateString } from '$lib/utils/date';

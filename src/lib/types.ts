@@ -111,19 +111,20 @@ export interface PyxisLoginData {
   }
 }
 export interface ClassroomReservation {
-	reservation_id: number;
-	classroom_id: string;
-	user_id: string;
-	purpose: string;
-	email: string | null;
-	tel: string | null;
-	attendees: number;
-	day_of_week: string;
-	start_time: string;
-	end_time: string;
-	reservation_date: string;
-	status: 'pending' | 'approved' | 'rejected';
-	created_at: string;
+    reservation_id: number;
+    classroom_id: string;
+    room_number?: string; // classrooms 테이블에서 조인
+    user_id: string;
+    purpose: string;
+    email: string | null;
+    tel: string | null;
+    attendees: number;
+    day_of_week: string;
+    start_time: string;
+    end_time: string;
+    reservation_date: string;
+    status: 'pending' | 'approved' | 'rejected';
+    created_at: string;
 }
 
 export interface ReservationFormData {

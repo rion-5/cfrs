@@ -4,40 +4,56 @@ import { query } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ locals }) => {
-  // 세션 검증
-  if (!locals.session.user) {
-    throw error(401, '인증되지 않은 사용자입니다.');
-  }
+    // 세션 검증
+    if (!locals.session.user) {
+        throw error(401, '인증되지 않은 사용자입니다.');
+    }
 
-  try {
-    // 토론실 예약 조회
-    const reservations = await query(
-      `SELECT r.id, r.room_id,
-        (SELECT name FROM room WHERE id = r.room_id) AS room_name,
-        r.start_time, r.end_time, r.actual_end_time
-       FROM reservation r
-       WHERE r.user_id = $1
-         AND DATE(r.start_time) >= CURRENT_DATE
-       ORDER BY r.start_time ASC`,
-      [locals.session.user.id_no]
-    );
+    try {
+        // 토론실 예약 조회
+        const reservations = await query(
+            `SELECT r.id, r.room_id,
+                (SELECT name FROM room WHERE id = r.room_id) AS room_name,
+                r.start_time, r.end_time, r.actual_end_time
+             FROM reservation r
+             WHERE r.user_id = $1
+               AND DATE(r.start_time) >= CURRENT_DATE
+             ORDER BY r.start_time ASC`,
+            [locals.session.user.id_no]
+        );
 
-    // 열람실 이용 현황 조회
-    const seatUsages = await query(
-      `SELECT id, seat_number, user_id, start_time, end_time
-       FROM reading_seats
-       WHERE user_id = $1
-         AND DATE(start_time) >= CURRENT_DATE
-       ORDER BY start_time DESC 
-       LIMIT 1`,
-      [locals.session.user.id_no]
-    );
+        // 열람실 이용 현황 조회
+        const seatUsages = await query(
+            `SELECT id, seat_number, user_id, start_time, end_time
+             FROM reading_seats
+             WHERE user_id = $1
+               AND DATE(start_time) >= CURRENT_DATE
+             ORDER BY start_time DESC 
+             LIMIT 1`,
+            [locals.session.user.id_no]
+        );
 
-    return json({ reservations, seatUsages });
-  } catch (err) {
-    console.error(err);
-    // return json({ error: '내부 서버 오류입니다.' }, { status: 500 });
-    throw error(500, '내부 서버 오류입니다.');
+        // 강의실 예약 조회
+        const classroomReservations = await query(
+            `SELECT cr.reservation_id, cr.classroom_id, c.room_number,
+                    cr.user_id, cr.purpose, cr.attendees, 
+                    cr.start_time, cr.end_time,
+                    TO_CHAR(cr.reservation_date, 'YYYY-MM-DD') AS reservation_date,
+                    cr.day_of_week, cr.status, cr.created_at
+             FROM classroom_reservations cr
+             LEFT JOIN classrooms c ON cr.classroom_id = c.classroom_id
+             WHERE cr.user_id = $1
+               AND DATE(cr.reservation_date) >= CURRENT_DATE
+               AND cr.status IN ('pending', 'approved', 'rejected')
+             ORDER BY cr.reservation_date, cr.start_time ASC`,
+            [locals.session.user.id_no]
+        );
 
-  }
+        console.log('Reservations:', reservations, 'SeatUsages:', seatUsages, 'ClassroomReservations:', classroomReservations);
+
+        return json({ reservations, seatUsages, classroomReservations });
+    } catch (err) {
+        console.error(err);
+        throw error(500, '내부 서버 오류입니다.');
+    }
 };
