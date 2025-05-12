@@ -199,8 +199,8 @@
 
 		<!-- 색상 안내 -->
 		<div class="mb-4 text-sm text-gray-600">
-			<span class="mr-1 inline-block h-4 w-4 bg-blue-500"></span> 예약가능
-			<span class="mr-1 ml-4 inline-block h-4 w-4 bg-red-500"></span> 내 예약
+			<span class="mr-1 inline-block h-4 w-4 bg-white border border-gray-300"></span> 예약가능
+			<span class="mr-1 ml-4 inline-block h-4 w-4 bg-indigo-500"></span> 내 예약
 			<span class="mr-1 ml-4 inline-block h-4 w-4 bg-gray-300"></span> 타인예약
 			<span class="mr-1 ml-4 inline-block h-4 w-4 bg-gray-400"></span> 예약불가
 		</div>
@@ -212,27 +212,27 @@
 				<div class="flex justify-center">
 					<div class="flex max-w-full flex-wrap justify-start gap-1 sm:gap-2">
 						{#each HOURS as hour}
-							<button
-								class="h-8 w-8 rounded-md text-sm font-bold text-white sm:h-9 sm:w-10
-									{isPast(hour)
-										? 'cursor-not-allowed bg-gray-400'
-										: isMine(room.id, hour)
-											? 'bg-red-500'
-											: isReserved(room.id, hour)
-												? 'cursor-not-allowed bg-gray-300'
-												: 'bg-blue-500 hover:bg-blue-600'}"
-								on:click={() => handleClick(room.id, hour)}
-								disabled={isPast(hour) || (isReserved(room.id, hour) && !isMine(room.id, hour))}
-								aria-label="{hour}시 {isPast(hour)
-									? '예약 불가'
-									: isMine(room.id, hour)
-										? '내 예약'
-										: isReserved(room.id, hour)
-											? '타인 예약'
-											: '예약 가능'}"
-							>
-								{hour}
-							</button>
+<button
+	class="h-8 w-8 rounded-md text-sm font-bold sm:h-9 sm:w-10
+		{isPast(hour)
+			? 'cursor-not-allowed bg-gray-400 text-white'
+			: isMine(room.id, hour)
+				? 'bg-indigo-500 text-white hover:bg-indigo-600'
+				: isReserved(room.id, hour)
+					? 'cursor-not-allowed bg-gray-300 text-gray-800'
+					: 'bg-white border border-gray-300 text-gray-800 hover:bg-gray-100 hover:border-gray-500'}"
+	on:click={() => handleClick(room.id, hour)}
+	disabled={isPast(hour) || (isReserved(room.id, hour) && !isMine(room.id, hour))}
+	aria-label="{hour}시 {isPast(hour)
+		? '예약 불가'
+		: isMine(room.id, hour)
+			? '내 예약'
+			: isReserved(room.id, hour)
+				? '타인 예약'
+				: '예약 가능'}"
+>
+	{hour}
+</button>
 						{/each}
 					</div>
 				</div>

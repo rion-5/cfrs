@@ -144,8 +144,8 @@
 		<h1 class="text-center text-2xl font-bold">도담 📖열람실 이용 등록</h1>
 		<!-- 색상 안내 -->
 		<div class="mt-4 text-sm text-gray-600">
-			<span class="inline-block h-4 w-4 bg-green-500 mr-1"></span> 사용 가능
-			<span class="inline-block h-4 w-4 bg-red-500 mr-1 ml-4"></span> 내 좌석
+			<span class="inline-block h-4 w-4 bg-white border border-gray-300 mr-1"></span> 사용 가능
+			<span class="inline-block h-4 w-4 bg-indigo-500 mr-1 ml-4"></span> 내 좌석
 			<span class="inline-block h-4 w-4 bg-gray-400 mr-1 ml-4"></span> 사용 중
 		</div>
 		<!-- Seat Map Layout -->
@@ -160,12 +160,12 @@
 							<div class="h-7 w-7 sm:h-8 sm:w-8"></div>
 						{:else}
 							<button
-								class="h-8 w-8 sm:h-9 sm:w-9 rounded-md text-sm font-bold text-white
+								class="h-8 w-8 sm:h-9 sm:w-9 rounded-md text-sm font-bold
 									{mySeat === seat
-										? 'bg-red-500'
+										? 'bg-indigo-500'
 										: usedSeats.includes(seat)
 											? 'cursor-not-allowed bg-gray-400'
-											: 'bg-green-500 hover:bg-green-600'}"
+											: 'bg-white border border-gray-300 text-gray-800 hover:bg-gray-100 hover:border-gray-500'}"
 								on:click={() => handleSeatClick(seat)}
 								disabled={usedSeats.includes(seat) && mySeat !== seat}
 								aria-label="좌석 {seat} {mySeat === seat ? '선택됨' : usedSeats.includes(seat) ? '사용 중' : '사용 가능'}"
