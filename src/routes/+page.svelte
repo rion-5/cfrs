@@ -129,8 +129,31 @@
 		if (now >= start) return '사용중';
 		return '예약중';
 	}
-
-	async function handleCancelReservation(reservationId: number) {
+async function handleCancelReservation(reservationId: number) {
+		if (confirm('예약을 취소하시겠습니까?')) {
+			try {
+				const res = await fetch('/api/reservations', {
+					method: 'DELETE',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ id: reservationId, user_id: userId }),
+					credentials: 'include' // 쿠키 포함
+				});
+				if (!res.ok) {
+					if (res.status === 401) {
+						error = '세션이 만료되었습니다. 다시 로그인해주세요.';
+						goto('/login');
+						return;
+					}
+					throw new Error('예약 취소에 실패했습니다.');
+				}
+				await fetchData();
+			} catch (err) {
+				// alert(err instanceof Error ? err.message : '예약 취소에 실패했습니다.');
+				throw err;
+			}
+		}
+	}
+	async function handleCancelClassRoomReservation(reservationId: number) {
 		if (confirm('예약을 취소하시겠습니까?')) {
 			try {
 				const res = await fetch(`/api/classroom-reservations?reservation_id=${reservationId}`, {
@@ -320,7 +343,7 @@
 								{#if getStatus(cr) === '대기중'}
 									<button
 										class="rounded border border-red-300 px-2 py-1 text-xs text-red-500 hover:bg-red-100"
-										on:click={() => handleCancelReservation(cr.reservation_id)}
+										on:click={() => handleCancelClassRoomReservation(cr.reservation_id)}
 									>
 										취소
 									</button>

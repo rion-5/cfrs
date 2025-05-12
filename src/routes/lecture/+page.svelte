@@ -176,7 +176,7 @@
 				<a href="/my-reservations" class="text-blue-500">내 예약 내역</a>
 			</div>
 		{:else if view === 'timetable'}
-			<h1 class="mb-4 text-2xl font-bold">
+			<h1 class="mb-4 text-2xl font-bold text-center">
 				{formatDateToYYYYMMDD(selectedDate)} 빈 강의실
 			</h1>
 			<button class="mb-4 text-blue-500" on:click={() => (view = 'search')}>검색 수정</button>
@@ -190,7 +190,7 @@
 				on:cancel={({ detail }) => handleCancel(detail.reservationId)}
 			/>
 		{:else if view === 'form' && selectedClassroom}
-			<h1 class="mb-4 text-2xl font-bold">예약 신청</h1>
+			<h1 class="mb-4 text-2xl font-bold text-center">예약 신청</h1>
 			<ReservationForm
 				classroom={selectedClassroom}
 				date={selectedDate}
@@ -198,7 +198,7 @@
 				on:cancel={() => (view = 'timetable')}
 			/>
 		{:else if view === 'confirmation' && reservationResult}
-			<h1 class="mb-4 text-2xl font-bold">예약 완료</h1>
+			<h1 class="mb-4 text-2xl font-bold text-center">예약 완료</h1>
 			<div class="rounded bg-green-100 p-4">
 				<p>예약 신청이 완료되었습니다.</p>
 				<p>강의실: {reservationResult.classroom_id}</p>

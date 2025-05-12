@@ -58,7 +58,11 @@ export async function GET({ url }) {
 	return json(reservations);
 }
 
-export async function POST({ request }) {
+export async function POST({ request, locals }) {
+	if (!locals.session?.user?.id_no) {
+		return json({ error: '인증되지 않은 사용자입니다.' }, { status: 401 });
+	}
+
 	const data = await request.json();
 	const {
 		classroom_id,
@@ -69,13 +73,21 @@ export async function POST({ request }) {
 		tel,
 		start_time,
 		end_time,
-		reservation_date
+		reservation_date,
+		day_of_week
 	} = data;
 
-	if (!classroom_id || !user_id || !purpose || !attendees || !start_time || !end_time || !reservation_date) {
-		return json({ error: '필수 입력값이 누락되었습니다.' }, { status: 400 });
+	// 필수 필드 검증
+	if (!classroom_id || !user_id || !purpose || !attendees || !start_time || !end_time || !reservation_date || !day_of_week) {
+		return json({ error: '필수 입력값이 누락되었습니다: classroom_id, user_id, purpose, attendees, start_time, end_time, reservation_date, day_of_week' }, { status: 400 });
 	}
 
+	// 사용자 인증 검증
+	if (user_id !== locals.session.user.id_no) {
+		return json({ error: '사용자 ID가 일치하지 않습니다.' }, { status: 403 });
+	}
+
+	// 강의실 수용 인원 검증
 	const capacityQuery = `SELECT capacity FROM classrooms WHERE classroom_id = $1`;
 	const capacityResult = await query(capacityQuery, [classroom_id]);
 	if (capacityResult.length === 0) {
@@ -85,6 +97,7 @@ export async function POST({ request }) {
 		return json({ error: '이용 인원이 강의실 수용 인원을 초과합니다.' }, { status: 400 });
 	}
 
+	// 예약 충돌 검증
 	const conflictQuery = `
 		SELECT 1 FROM classroom_reservations cr
 		WHERE cr.classroom_id = $1
@@ -95,15 +108,16 @@ export async function POST({ request }) {
 		UNION
 		SELECT 1 FROM schedules s
 		WHERE s.classroom_id = $1
-		AND s.day_of_week = to_char($2::date, 'FMDay')
+		AND s.day_of_week = $5
 		AND s.start_time < $4
 		AND s.end_time > $3
 		AND s.semester = '2025-1'`;
-	const conflictResult = await query(conflictQuery, [classroom_id, reservation_date, start_time, end_time]);
+	const conflictResult = await query(conflictQuery, [classroom_id, reservation_date, start_time, end_time, day_of_week]);
 	if (conflictResult.length > 0) {
 		return json({ error: '선택한 시간대에 이미 예약 또는 수업이 있습니다.' }, { status: 400 });
 	}
 
+	// 예약 삽입
 	const insertQuery = `
 		INSERT INTO classroom_reservations (
 			classroom_id, user_id, purpose, email, tel, attendees,
@@ -117,7 +131,7 @@ export async function POST({ request }) {
 		email || null,
 		tel || null,
 		attendees,
-		new Date(reservation_date).toLocaleString('ko-KR', { weekday: 'long' }),
+		day_of_week,
 		start_time,
 		end_time,
 		reservation_date

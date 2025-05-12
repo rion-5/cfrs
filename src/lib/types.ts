@@ -137,6 +137,7 @@ export interface ReservationFormData {
 	start_time: string;
 	end_time: string;
 	reservation_date: string;
+  day_of_week: string;
 }
 
 export interface ClassroomSlot {
