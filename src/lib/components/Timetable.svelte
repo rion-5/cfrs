@@ -122,11 +122,11 @@
 						{@const { status, reservationId } = getSlotStatus(classroom, slot)}
 						<td
 							class="border p-1 relative"
-							class:bg-orange-500={status === 'my-pending'}
+							class:bg-yellow-500={status === 'my-pending'}
 							class:bg-green-500={status === 'my-approved'}
 							class:bg-red-500={status === 'my-rejected'}
 							class:bg-gray-500={status === 'other-reservation'}
-							class:bg-green-100={status === 'available'}
+							class:bg-white={status === 'available'}
 							class:bg-gray-300={status === 'unavailable'}
 							class:cursor-pointer={status === 'available' || status === 'my-pending' || status === 'my-approved'}
 							class:cursor-not-allowed={status === 'my-rejected' || status === 'other-reservation' || status === 'unavailable'}

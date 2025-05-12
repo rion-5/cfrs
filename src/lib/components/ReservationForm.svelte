@@ -9,7 +9,7 @@
 
 	const dispatch = createEventDispatcher();
 	let purpose = '';
-	let attendees: number | null = null;
+	let attendees: number = 1;
 	let email = '';
 	let tel = '';
 	let endTime: string | null = null;

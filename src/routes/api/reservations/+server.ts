@@ -75,7 +75,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
       throw error(403, '하루 최대 2시간까지만 예약할 수 있습니다.');
     }
 
-    // 월 20시간 제한
+    // 월 60시간 제한
     const monthLimitCheck = await query(
       `SELECT SUM(EXTRACT(EPOCH FROM (end_time - start_time)) / 3600) AS total_hours
        FROM reservation
@@ -85,7 +85,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
     );
     const monthlyHours = Number(monthLimitCheck[0].total_hours ?? 0);
     if (monthlyHours + 1 > 20) {
-      throw error(403, '한 달 최대 20시간까지만 예약할 수 있습니다.');
+      throw error(403, '한 달 최대 60시간까지만 예약할 수 있습니다.');
     }
 
     await query(

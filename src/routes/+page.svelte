@@ -242,6 +242,7 @@ async function handleCancelReservation(reservationId: number) {
 		</div>
 
 		<div class="mt-6 space-y-4">
+			
 			<h2 class="text-left text-base font-semibold">💬 토론실 예약 현황</h2>
 			{#if reservations.length > 0}
 				<div class="space-y-2">
@@ -279,9 +280,9 @@ async function handleCancelReservation(reservationId: number) {
 			{:else}
 				<div class="text-sm text-gray-400">예정된 예약이 없습니다.</div>
 			{/if}
-
-			<h2 class="text-left text-base font-semibold">📖 열람실 이용 현황</h2>
+			
 			{#if seatUsages.length > 0}
+			<h2 class="text-left text-base font-semibold">📖 열람실 이용 현황</h2>
 				<div class="space-y-2">
 					{#each seatUsages as s}
 						<div
@@ -315,11 +316,11 @@ async function handleCancelReservation(reservationId: number) {
 					{/each}
 				</div>
 			{:else}
-				<div class="text-sm text-gray-400">현재 이용 중인 좌석이 없습니다.</div>
+				<!-- <div class="text-sm text-gray-400">현재 이용 중인 좌석이 없습니다.</div> -->
 			{/if}
 
-			<h2 class="text-left text-base font-semibold">🎓 강의실 예약 현황</h2>
 			{#if classroomReservations.length > 0}
+			<h2 class="text-left text-base font-semibold">🎓 강의실 예약 현황</h2>
 				<div class="space-y-2">
 					{#each classroomReservations as cr}
 						<div
@@ -340,7 +341,7 @@ async function handleCancelReservation(reservationId: number) {
 								</div>
 							</div>
 							<div class="flex items-center space-x-1">
-								{#if getStatus(cr) === '대기중'}
+								{#if getStatus(cr) === '대기중' || getStatus(cr) === '승인'}
 									<button
 										class="rounded border border-red-300 px-2 py-1 text-xs text-red-500 hover:bg-red-100"
 										on:click={() => handleCancelClassRoomReservation(cr.reservation_id)}
@@ -353,7 +354,7 @@ async function handleCancelReservation(reservationId: number) {
 					{/each}
 				</div>
 			{:else}
-				<div class="text-sm text-gray-400">예정된 예약이 없습니다.</div>
+				<!-- <div class="text-sm text-gray-400">예정된 예약이 없습니다.</div> -->
 			{/if}
 		</div>
 	{/if}

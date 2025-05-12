@@ -16,25 +16,26 @@ export async function GET({ url }) {
 
 	const sql = `
 		SELECT
-			reservation_id,
-			classroom_id,
-			user_id,
-			start_time,
-			end_time,
-			reservation_date,
-			purpose,
-			attendees,
-			email,
-			tel,
-			day_of_week,
-			status
-		FROM classroom_reservations
-		WHERE reservation_date = $1
-			AND (classroom_id = $2 OR $2 IS NULL)
-			AND start_time >= $3
-			AND end_time <= $4
-			AND status IN ('approved', 'pending', 'rejected')
-		ORDER BY classroom_id, start_time;
+			cr.reservation_id,
+			cr.classroom_id, c.room_number,
+			cr.user_id,
+			cr.start_time,
+			cr.end_time,
+			cr.reservation_date,
+			cr.purpose,
+			cr.attendees,
+			cr.email,
+			cr.tel,
+			cr.day_of_week,
+			cr.status
+		FROM classroom_reservations cr
+		    LEFT JOIN classrooms c ON cr.classroom_id = c.classroom_id
+		WHERE cr.reservation_date = $1
+			AND (cr.classroom_id = $2 OR $2 IS NULL)
+			AND cr.start_time >= $3
+			AND cr.end_time <= $4
+			AND cr.status IN ('approved', 'pending', 'rejected')
+		ORDER BY cr.classroom_id, cr.start_time;
 	`;
 	const params = [date, classroomId || null, startTime, endTime];
 	const result = await query(sql, params);
@@ -65,7 +66,7 @@ export async function POST({ request, locals }) {
 
 	const data = await request.json();
 	const {
-		classroom_id,
+		classroom_id, room_number,
 		user_id,
 		purpose,
 		attendees,
