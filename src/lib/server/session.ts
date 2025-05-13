@@ -49,8 +49,10 @@ export function setSession(cookies: Cookies, user: { id_no: string; user_name: s
 	cookies.set('session_token', sessionData, {
 		path: '/',
 		httpOnly: true,
-		secure: process.env.NODE_ENV === 'production',
-		sameSite: 'strict',
+		// secure: process.env.NODE_ENV === 'production',
+		secure: process.env.NODE_ENV === 'production' && !process.env.DEV,
+		// sameSite: 'strict',
+		sameSite: 'lax',
 		maxAge: 2 * 60 * 60 // 운영용 2시간
 	});
 }
@@ -70,8 +72,10 @@ export function extendSession(cookies: Cookies) {
 		cookies.set('session_token', sessionToken, {
 			path: '/',
 			httpOnly: true,
-			secure: process.env.NODE_ENV === 'production',
-			sameSite: 'strict',
+			// secure: process.env.NODE_ENV === 'production',
+			secure: process.env.NODE_ENV === 'production' && !process.env.DEV,
+			// sameSite: 'strict',
+			sameSite: 'lax',
 			maxAge: 2 * 60 * 60 // 운영용 2시간
 		});
 		return true;
