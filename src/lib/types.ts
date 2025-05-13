@@ -1,5 +1,3 @@
-
-
 export interface LoginParam {
 	loginId: string;
 	password: string;
@@ -156,4 +154,12 @@ export interface ClassroomAvailability {
 export interface ReservationStore {
 	availability: ClassroomAvailability[];
 	reservations: ClassroomReservation[];
+}
+
+export interface Schedule {
+	classroom_id: string;
+	day_of_week: string;
+	start_time: string;
+	end_time: string;
+	semester: string;
 }

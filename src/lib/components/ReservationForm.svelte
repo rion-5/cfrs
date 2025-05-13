@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher, onMount } from 'svelte';
 	import { reservationStore } from '$lib/stores/reservation';
 	import { auth } from '$lib/stores/auth';
-	import type { ClassroomAvailability, ReservationFormData } from '$lib/types';
+	import type { ClassroomAvailability, ReservationFormData, Schedule } from '$lib/types';
 
 	export let classroom: { classroom: ClassroomAvailability; slot: { start: string; end: string } };
 	export let date: Date;
@@ -14,6 +14,8 @@
 	let tel = '';
 	let endTime: string | null = null;
 	let error: string | null = null;
+	let schedules: Schedule[] = [];
+	let isLoading = true; // 로딩 상태 추가
 
 	// 종료 시간 옵션
 	const durationOptions = [
@@ -26,6 +28,28 @@
 	// 운영 시간
 	const operatingStart = '09:00:00';
 	const operatingEnd = '22:00:00';
+
+	// 수업 시간 데이터 로드
+	onMount(async () => {
+		try {
+			const response = await fetch(
+				`/api/schedules?classroom_id=${classroom.classroom.classroom_id}&date=${formatDateToYYYYMMDD(date)}`
+			);
+			if (response.ok) {
+				schedules = await response.json();
+				console.log('Loaded Schedules:', schedules);
+			} else {
+				console.error('Failed to load schedules:', response.status, response.statusText);
+				error = '수업 데이터를 불러오지 못했습니다.';
+			}
+		} catch (err) {
+			console.error('Schedules Fetch Error:', err);
+			error = '수업 데이터 로드 중 오류가 발생했습니다.';
+		} finally {
+			isLoading = false; // 로딩 완료
+			console.log('Loading Complete, isLoading:', isLoading);
+		}
+	});
 
 	// 시간 문자열을 분으로 변환
 	function timeToMinutes(time: string): number {
@@ -42,6 +66,7 @@
 
 	// 가용 시간 확인
 	function isTimeAvailable(start: string, durationMinutes: number): boolean {
+		console.log('isTimeAvailable called with schedules:', schedules);
 		const startMinutes = timeToMinutes(start);
 		const endMinutes = startMinutes + durationMinutes;
 		const operatingStartMinutes = timeToMinutes(operatingStart);
@@ -49,6 +74,7 @@
 
 		// 운영 시간 내 확인
 		if (endMinutes > operatingEndMinutes || startMinutes < operatingStartMinutes) {
+			console.log(`Time ${start}+${durationMinutes}min out of operating hours`);
 			return false;
 		}
 
@@ -63,9 +89,24 @@
 			const resStart = timeToMinutes(reservation.start_time);
 			const resEnd = timeToMinutes(reservation.end_time);
 			if (startMinutes < resEnd && endMinutes > resStart) {
+				console.log(`Reservation conflict at ${start}+${durationMinutes}min with ${reservation.start_time}-${reservation.end_time}`);
 				return false;
 			}
 		}
+
+		// 수업 시간과 충돌 확인
+		for (const schedule of schedules) {
+			const schedStart = timeToMinutes(schedule.start_time);
+			const schedEnd = timeToMinutes(schedule.end_time);
+			console.log(`Checking schedule ${start}+${durationMinutes}min vs ${schedule.start_time}-${schedule.end_time}`);
+			console.log(`startMinutes < schedEnd && endMinutes > schedStart: ${startMinutes} < ${schedEnd} && ${endMinutes} > ${schedStart}`);
+			if (startMinutes < schedEnd && endMinutes > schedStart) {
+				console.log(`Schedule conflict at ${start}+${durationMinutes}min with ${schedule.start_time}-${schedule.end_time}`);
+				return false;
+			}
+		}
+
+		console.log(`Time ${start}+${durationMinutes}min is available`);
 		return true;
 	}
 
@@ -144,24 +185,28 @@
 	<!-- 종료 시간 선택 -->
 	<div>
 		<label for="end_time" class="block text-sm font-medium text-gray-700">예약 시간</label>
-		<div class="mt-1 flex space-x-2">
-			{#each durationOptions as option}
-				{#if isTimeAvailable(classroom.slot.start, option.minutes)}
-					<button
-						on:click={() => selectDuration(option.minutes)}
-						class="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-indigo-100"
-						class:bg-indigo-500={endTime === minutesToTime(timeToMinutes(classroom.slot.start) + option.minutes)}
-						class:text-white={endTime === minutesToTime(timeToMinutes(classroom.slot.start) + option.minutes)}
-					>
-						{option.label}
-					</button>
-				{/if}
-			{/each}
-		</div>
-		{#if endTime}
-			<div class="mt-2 text-sm text-gray-600">
-				종료 시간: {endTime.slice(0, 5)}
+		{#if isLoading}
+			<div class="mt-1 text-sm text-gray-600">수업 데이터 로드 중...</div>
+		{:else}
+			<div class="mt-1 flex space-x-2">
+				{#each durationOptions as option}
+					{#if isTimeAvailable(classroom.slot.start, option.minutes)}
+						<button
+							on:click={() => selectDuration(option.minutes)}
+							class="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-indigo-100"
+							class:bg-indigo-500={endTime === minutesToTime(timeToMinutes(classroom.slot.start) + option.minutes)}
+							class:text-white={endTime === minutesToTime(timeToMinutes(classroom.slot.start) + option.minutes)}
+						>
+							{option.label}
+						</button>
+					{/if}
+				{/each}
 			</div>
+			{#if endTime}
+				<div class="mt-2 text-sm text-gray-600">
+					종료 시간: {endTime.slice(0, 5)}
+				</div>
+			{/if}
 		{/if}
 	</div>
 
@@ -220,7 +265,7 @@
 		<button
 			on:click={submit}
 			class="flex-1 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:bg-gray-400"
-			disabled={!purpose || !attendees || !endTime}
+			disabled={!purpose || !attendees || !endTime || isLoading}
 		>
 			예약 신청
 		</button>

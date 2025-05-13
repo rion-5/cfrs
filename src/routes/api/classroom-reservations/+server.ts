@@ -109,11 +109,20 @@ export async function POST({ request, locals }) {
 		UNION
 		SELECT 1 FROM schedules s
 		WHERE s.classroom_id = $1
-		AND s.day_of_week = $5
+		AND s.day_of_week = CASE to_char($2::date, 'FMDay')
+			WHEN 'Monday' THEN '월요일'
+			WHEN 'Tuesday' THEN '화요일'
+			WHEN 'Wednesday' THEN '수요일'
+			WHEN 'Thursday' THEN '목요일'
+			WHEN 'Friday' THEN '금요일'
+			WHEN 'Saturday' THEN '토요일'
+			WHEN 'Sunday' THEN '일요일'
+			ELSE ''
+		END
 		AND s.start_time < $4
 		AND s.end_time > $3
 		AND s.semester = '2025-1'`;
-	const conflictResult = await query(conflictQuery, [classroom_id, reservation_date, start_time, end_time, day_of_week]);
+	const conflictResult = await query(conflictQuery, [classroom_id, reservation_date, start_time, end_time]);
 	if (conflictResult.length > 0) {
 		return json({ error: '선택한 시간대에 이미 예약 또는 수업이 있습니다.' }, { status: 400 });
 	}
