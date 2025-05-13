@@ -50,7 +50,7 @@ export function setSession(cookies: Cookies, user: { id_no: string; user_name: s
 		path: '/',
 		httpOnly: true,
 		// secure: process.env.NODE_ENV === 'production',
-		secure: process.env.NODE_ENV === 'production' && !process.env.DEV,
+		secure: false,
 		// sameSite: 'strict',
 		sameSite: 'lax',
 		maxAge: 2 * 60 * 60 // 운영용 2시간
@@ -73,7 +73,7 @@ export function extendSession(cookies: Cookies) {
 			path: '/',
 			httpOnly: true,
 			// secure: process.env.NODE_ENV === 'production',
-			secure: process.env.NODE_ENV === 'production' && !process.env.DEV,
+			secure: false,
 			// sameSite: 'strict',
 			sameSite: 'lax',
 			maxAge: 2 * 60 * 60 // 운영용 2시간
