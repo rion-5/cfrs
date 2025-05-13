@@ -208,10 +208,10 @@
 		<h1 class="mb-4 text-center text-2xl font-bold">예약 완료</h1>
 		<div class="rounded bg-green-100 p-4">
 			<p>예약 신청이 완료되었습니다.</p>
-			<p>강의실: {reservationResult.classroom_id}</p>
+			<p>강의실: {reservationResult.classroom_id.slice(-3)}</p>
 			<p>날짜: {reservationResult.reservation_date}</p>
 			<p>
-				시간: {reservationResult.start_time} ~ {reservationResult.end_time}
+				시간: {reservationResult.start_time.slice(0,5)} ~ {reservationResult.end_time.slice(0,5)}
 			</p>
 			<p>목적: {reservationResult.purpose}</p>
 			<!-- <p>상태: {reservationResult.status}</p> -->
