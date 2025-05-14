@@ -87,5 +87,10 @@ export function extendSession(cookies: Cookies) {
 
 // 세션 삭제 (로그아웃 시 호출)
 export function clearSession(cookies: Cookies) {
-	cookies.delete('session_token', { path: '/' });
+	cookies.delete('session_token', {
+		path: '/',
+		httpOnly: true,
+		sameSite: 'lax',
+		secure: false // 로컬 HTTP 테스트
+	});
 }
