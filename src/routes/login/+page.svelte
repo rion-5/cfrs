@@ -61,11 +61,8 @@
 
 				const $page = get(page);
 				const target = $page.url.searchParams.get('redirect') || '/';
-
-				// console.log('리다이렉트 대상:', target);
 				goto(target);
 			} else {
-				// Reset inputs and focus on loginId
 				loginId = '';
 				password = '';
 				error =
@@ -81,7 +78,6 @@
 				loginIdInput.focus();
 			}
 		} catch (err) {
-			// Reset inputs and focus on loginId
 			loginId = '';
 			password = '';
 			loginIdInput.focus();
@@ -90,7 +86,7 @@
 	}
 
 	function handleKeydown(event: KeyboardEvent) {
-		if (event.key == 'Enter') {
+		if (event.key === 'Enter') {
 			if (!loginId) {
 				loginIdInput.focus();
 				return;
@@ -99,46 +95,58 @@
 				passwordInput.focus();
 				return;
 			}
-
 			handleLogin();
 		}
 	}
 </script>
 
-<main class="flex min-h-screen items-start justify-center">
-	<div class="mt-40 w-full max-w-sm rounded-xl bg-white p-6 shadow-md">
-		<h2 class="mb-4 text-center text-xl font-semibold">Login</h2>
+<svelte:head>
+	<link
+		href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Montserrat:wght@400;600&display=swap"
+		rel="stylesheet"
+	/>
+</svelte:head>
+
+<main class="flex min-h-screen items-start justify-center bg-gray-50">
+	<div class="mt-24 w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
+		<h1 class="mb-6 text-center text-4xl font-bold text-indigo-900" style="font-family: 'Playfair Display', serif;">
+			CBE SPACE
+		</h1>
+		<h2 class="mb-6 text-center text-xl font-semibold text-gray-700" style="font-family: 'Montserrat', sans-serif;">
+			Login
+		</h2>
 		<input
-			class="mb-3 w-full rounded-md border border-gray-300 p-3"
+			class="mb-4 w-full rounded-lg border border-gray-200 p-3 text-gray-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
 			type="text"
 			placeholder="Student ID"
 			bind:this={loginIdInput}
 			bind:value={loginId}
 			on:keydown={handleKeydown}
+			style="font-family: 'Montserrat', sans-serif;"
 		/>
 		<input
-			class="mb-3 w-full rounded-md border border-gray-300 p-3"
+			class="mb-6 w-full rounded-lg border border-gray-200 p-3 text-gray-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
 			type="password"
 			placeholder="Portal Password"
 			bind:this={passwordInput}
 			bind:value={password}
 			on:keydown={handleKeydown}
+			style="font-family: 'Montserrat', sans-serif;"
 		/>
 		<button
-			class="w-full rounded-md bg-blue-600 p-3 text-white hover:bg-blue-700"
-			on:click={handleLogin}>Login</button
+			class="w-full rounded-lg bg-indigo-600 p-3 text-white font-semibold hover:bg-indigo-700 transition duration-300"
+			on:click={handleLogin}
+			style="font-family: 'Montserrat', sans-serif;"
 		>
+			Login
+		</button>
 		{#if error}
-			<p class="mt-3 text-center text-sm text-red-500">{error}</p>
+			<p
+				class="mt-4 text-center text-sm text-red-500"
+				style="font-family: 'Montserrat', sans-serif;"
+			>
+				{error}
+			</p>
 		{/if}
 	</div>
 </main>
-
-<!-- <style>
-  .error-message {
-    color: #ef4444;
-    font-size: 0.875rem;
-    margin-top: 0.75rem;
-    text-align: center;
-  }
-</style> -->
