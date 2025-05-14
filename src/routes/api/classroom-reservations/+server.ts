@@ -146,7 +146,7 @@ export async function POST({ request, locals }) {
 		end_time,
 		reservation_date
 	];
-	console.log('Insert Query:', insertQuery, 'Params:', params);
+	//console.log('Insert Query:', insertQuery, 'Params:', params);
 	const result = await query(insertQuery, params);
 
 	if (result.length === 0) {
@@ -167,7 +167,7 @@ export async function POST({ request, locals }) {
 export async function DELETE({ url, locals }) {
 	const reservationId = url.searchParams.get('reservation_id');
 	const userId = locals.session?.user?.id_no;
-	console.log('DELETE:', { reservationId, userId, session: locals.session });
+	//console.log('DELETE:', { reservationId, userId, session: locals.session });
 
 	if (!reservationId || !userId) {
 		return json({ error: '예약 ID와 사용자 ID가 필요합니다.' }, { status: 400 });
@@ -200,7 +200,7 @@ export async function DELETE({ url, locals }) {
 		RETURNING reservation_id;
 	`;
 	const result = await query(deleteQuery, [reservationId, userId]);
-	console.log('DELETE Result:', result);
+	//console.log('DELETE Result:', result);
 
 	if (result.length === 0) {
 		return json({ error: '예약을 찾을 수 없거나 취소 권한이 없습니다.' }, { status: 400 });

@@ -37,7 +37,7 @@
 			seatUsages = data.seatUsages;
 			classroomReservations = data.classroomReservations;
 			error = null;
-			console.log('Data:', { reservations, seatUsages, classroomReservations });
+			//console.log('Data:', { reservations, seatUsages, classroomReservations });
 		} catch (err) {
 			error = err instanceof Error ? err.message : '데이터를 불러오지 못했습니다.';
 		}
@@ -52,12 +52,12 @@
 			const tempDate = item.reservation_date.split('T')[0];
 			startDateStr = `${tempDate}T${item.start_time}`;
 			endDateStr = item.end_time ? `${tempDate}T${item.end_time}` : undefined;
-			console.log('ClassroomReservation date:', { tempDate, startDateStr, endDateStr });
+			//console.log('ClassroomReservation date:', { tempDate, startDateStr, endDateStr });
 		} else {
 			// MyReservation, MySeatUsage는 ISO 형식 가정
 			startDateStr = item.start_time;
 			endDateStr = item.end_time;
-			console.log('Other reservation date:', { startDateStr, endDateStr });
+			//console.log('Other reservation date:', { startDateStr, endDateStr });
 		}
 
 		const startDate = new Date(startDateStr);

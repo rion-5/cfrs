@@ -14,7 +14,7 @@ export async function login(params: LoginParam): Promise<PyxisLoginData> {
   }
 
   const data: PyxisLoginData = await response.json();
-  console.log(JSON.stringify(data, null, 2));
+  // console.log(JSON.stringify(data, null, 2));
   return data;
 }
 

@@ -48,7 +48,7 @@ export const GET: RequestHandler = async ({ locals }) => {
             [locals.session.user.id_no]
         );
 
-        console.log('Reservations:', reservations, 'SeatUsages:', seatUsages, 'ClassroomReservations:', classroomReservations);
+        //console.log('Reservations:', reservations, 'SeatUsages:', seatUsages, 'ClassroomReservations:', classroomReservations);
 
         return json({ reservations, seatUsages, classroomReservations });
     } catch (err) {

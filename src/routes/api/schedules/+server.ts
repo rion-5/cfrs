@@ -28,7 +28,7 @@ export const GET: RequestHandler = async ({ url }) => {
 		AND semester = $3;
 	`;
 	const params = [classroomId, date, semester];
-	console.log('Schedules Query:', sql, 'Params:', params);
+	//console.log('Schedules Query:', sql, 'Params:', params);
 
 	try {
 		const result = await query(sql, params);
@@ -39,7 +39,7 @@ export const GET: RequestHandler = async ({ url }) => {
 			end_time: row.end_time,
 			semester: row.semester
 		}));
-		console.log('Schedules Result:', schedules);
+		//console.log('Schedules Result:', schedules);
 		return json(schedules);
 	} catch (error) {
 		console.error('Schedules Query Error:', error);

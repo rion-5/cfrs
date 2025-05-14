@@ -37,7 +37,7 @@
 			);
 			if (response.ok) {
 				schedules = await response.json();
-				console.log('Loaded Schedules:', schedules);
+				//console.log('Loaded Schedules:', schedules);
 			} else {
 				console.error('Failed to load schedules:', response.status, response.statusText);
 				error = '수업 데이터를 불러오지 못했습니다.';
@@ -47,7 +47,7 @@
 			error = '수업 데이터 로드 중 오류가 발생했습니다.';
 		} finally {
 			isLoading = false; // 로딩 완료
-			console.log('Loading Complete, isLoading:', isLoading);
+			//console.log('Loading Complete, isLoading:', isLoading);
 		}
 	});
 
@@ -66,7 +66,7 @@
 
 	// 가용 시간 확인
 	function isTimeAvailable(start: string, durationMinutes: number): boolean {
-		console.log('isTimeAvailable called with schedules:', schedules);
+		//console.log('isTimeAvailable called with schedules:', schedules);
 		const startMinutes = timeToMinutes(start);
 		const endMinutes = startMinutes + durationMinutes;
 		const operatingStartMinutes = timeToMinutes(operatingStart);
@@ -74,7 +74,7 @@
 
 		// 운영 시간 내 확인
 		if (endMinutes > operatingEndMinutes || startMinutes < operatingStartMinutes) {
-			console.log(`Time ${start}+${durationMinutes}min out of operating hours`);
+			//console.log(`Time ${start}+${durationMinutes}min out of operating hours`);
 			return false;
 		}
 
@@ -89,7 +89,7 @@
 			const resStart = timeToMinutes(reservation.start_time);
 			const resEnd = timeToMinutes(reservation.end_time);
 			if (startMinutes < resEnd && endMinutes > resStart) {
-				console.log(`Reservation conflict at ${start}+${durationMinutes}min with ${reservation.start_time}-${reservation.end_time}`);
+				//console.log(`Reservation conflict at ${start}+${durationMinutes}min with ${reservation.start_time}-${reservation.end_time}`);
 				return false;
 			}
 		}
@@ -98,15 +98,15 @@
 		for (const schedule of schedules) {
 			const schedStart = timeToMinutes(schedule.start_time);
 			const schedEnd = timeToMinutes(schedule.end_time);
-			console.log(`Checking schedule ${start}+${durationMinutes}min vs ${schedule.start_time}-${schedule.end_time}`);
-			console.log(`startMinutes < schedEnd && endMinutes > schedStart: ${startMinutes} < ${schedEnd} && ${endMinutes} > ${schedStart}`);
+			//console.log(`Checking schedule ${start}+${durationMinutes}min vs ${schedule.start_time}-${schedule.end_time}`);
+			//console.log(`startMinutes < schedEnd && endMinutes > schedStart: ${startMinutes} < ${schedEnd} && ${endMinutes} > ${schedStart}`);
 			if (startMinutes < schedEnd && endMinutes > schedStart) {
-				console.log(`Schedule conflict at ${start}+${durationMinutes}min with ${schedule.start_time}-${schedule.end_time}`);
+				//console.log(`Schedule conflict at ${start}+${durationMinutes}min with ${schedule.start_time}-${schedule.end_time}`);
 				return false;
 			}
 		}
 
-		console.log(`Time ${start}+${durationMinutes}min is available`);
+		//console.log(`Time ${start}+${durationMinutes}min is available`);
 		return true;
 	}
 
