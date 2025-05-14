@@ -109,7 +109,7 @@
 
 <main class="flex min-h-screen items-start justify-center bg-gray-50">
 	<div class="mt-24 w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
-		<h1 class="mb-6 text-center p-8 text-4xl font-bold text-indigo-900" style="font-family: 'Playfair Display', serif;">
+		<h1 class="mb-6 text-center p-4 text-4xl font-bold text-indigo-900" style="font-family: 'Playfair Display', serif;">
 			CBE SPACE
 		</h1>
 		<!-- <h2 class="mb-6 text-center text-xl font-semibold text-gray-700" style="font-family: 'Montserrat', sans-serif;">
