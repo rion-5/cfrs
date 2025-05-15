@@ -3,10 +3,10 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { extendSession } from '$lib/server/session';
 
-export const GET: RequestHandler = async ({ cookies }) => {
-	const extended = extendSession(cookies);
-	if (!extended) {
-		return json({ message: '세션이 존재하지 않습니다.' }, { status: 401 });
-	}
-	return json({ success: true });
+export const POST: RequestHandler = async ({ cookies }) => {
+    const success = await extendSession(cookies);
+    if (!success) {
+        return json({ error: '세션 연장에 실패했습니다.' }, { status: 400 });
+    }
+    return json({ success: true });
 };

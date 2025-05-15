@@ -1,17 +1,20 @@
 // src/hooks.server.ts
-import { getSession } from '$lib/server/session';
 import type { Handle } from '@sveltejs/kit';
+import { getSession } from '$lib/server/session';
 
 export const handle: Handle = async ({ event, resolve }) => {
-  // console.log('hooks.server.ts 실행:', event.url.pathname);
-  const session = await getSession(event.request);
-  event.locals.session = session;
-  const protectedPaths = ['/reading', '/study', '/lecture'];
-  if (protectedPaths.some((path) => event.url.pathname.startsWith(path))) {
-    if (!session.user) {
-      return Response.redirect(`${event.url.origin}/login?redirect=${encodeURIComponent(event.url.pathname)}`, 303);
-    }
-  }
+    const session = await getSession(event.cookies);
+    event.locals.session = session;
+    console.log('Hooks: Session:', session);
 
-  return resolve(event);
+    // 보호된 경로 검증
+    const protectedPaths = ['/reading', '/study', '/lecture'];
+    // if (event.url.pathname.startsWith('/lecture') && !session.user) {
+    if (protectedPaths.some((path) => event.url.pathname.startsWith(path)) && !session.user) {
+        console.log(`Hooks: Unauthorized access to ${event.url.pathname}`);
+        return Response.redirect(`${event.url.origin}/login?redirect=${encodeURIComponent(event.url.pathname)}`, 303);
+
+    }
+
+    return resolve(event);
 };

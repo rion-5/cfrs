@@ -2,8 +2,8 @@ import type { LayoutServerLoad } from './$types';
 import { getSession } from '$lib/server/session';
 import { redirect } from '@sveltejs/kit';
 
-export const load: LayoutServerLoad = async ({ request, url }) => {
-	const session = await getSession(request);
+export const load: LayoutServerLoad = async ({ cookies, url }) => {
+	const session = await getSession(cookies);
 	const requiresAuth = url.pathname !== '/login';
 
 	if (requiresAuth && !session.user) {
