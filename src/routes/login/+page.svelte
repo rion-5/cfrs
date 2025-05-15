@@ -68,7 +68,7 @@
 				error =
 					dept_code === 'Y0000502' || dept_code === 'Y0001097'
 						? result.message
-						: 'Access restricted to 경상대 members only';
+						: 'Access restricted to College of Business and Economics members only';
 				loginIdInput.focus();
 			}
 		} catch (err) {
