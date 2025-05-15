@@ -102,7 +102,7 @@
 </svelte:head>
 
 <main class="flex min-h-screen items-start justify-center bg-gray-50">
-	<div class="mt-24 w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
+	<div class="mt-24 w-full max-w-md rounded-2xl bg-white p-8 shadow-lg login-box">
 		<h1
 			class="mb-6 text-center text-4xl font-bold text-indigo-900"
 			style="font-family: 'Playfair Display', serif;"
@@ -150,3 +150,13 @@
 		{/if}
 	</div>
 </main>
+
+<style>
+	@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.login-box {
+    animation: fadeIn 0.5s ease-out;
+}
+</style>
