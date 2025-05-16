@@ -41,7 +41,6 @@
 		isLoading = true;
 		try {
 			// 가용성 조회
-			console.log(`selectedDate ${formatDateToYYYYMMDD(selectedDate)} selectedTimeRange.start ${selectedTimeRange.start} selectedTimeRange.end ${selectedTimeRange.end}` );
 			const availResponse = await fetch(
 				`/api/classroom-availability?date=${formatDateToYYYYMMDD(selectedDate)}&start=${selectedTimeRange.start}&end=${selectedTimeRange.end}`,
 				{ credentials: 'include' }

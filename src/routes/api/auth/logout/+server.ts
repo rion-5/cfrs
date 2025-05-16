@@ -4,7 +4,6 @@ import type { RequestHandler } from './$types';
 import { clearSession } from '$lib/server/session';
 
 export const POST: RequestHandler = async ({ cookies }) => {
-    console.log('Logout: Deleting session_token');
     clearSession(cookies);
     return json({ success: true });
 };

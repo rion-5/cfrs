@@ -64,7 +64,6 @@
 		const slotStartMinutes = timeToMinutes(slot.start);
 		const slotEndMinutes = timeToMinutes(slot.end);
 
-		//console.log('Checking slot:', { classroom: classroom.classroom_id, slot, selectedDateStr, reservations });
 
 		const reservation = reservations.find((res) => {
 			const resStartMinutes = timeToMinutes(res.start_time);
@@ -79,7 +78,6 @@
 		});
 
 		if (reservation) {
-			//console.log('Found reservation:', reservation);
 			if (reservation.user_id === userId) {
 				if (reservation.status === 'pending') {
 					return { status: 'my-pending', reservationId: reservation.reservation_id };

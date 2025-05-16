@@ -81,7 +81,6 @@ export const POST: RequestHandler = async (event) => {
         // 하루 10번, 3시간 제한 검증
  
         // const utctoday = new Date().toISOString().split('T')[0];
-        // console.log(`utctoday ${utctoday}`); // UTC로 나와서 오류 발생
 
         const today = getTodayKST();
         const usageCheck = await query(

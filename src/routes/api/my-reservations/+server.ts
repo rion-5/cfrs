@@ -46,7 +46,6 @@ export const GET: RequestHandler = async (event) => {
             [userId]
         );
 
-        //console.log('Reservations:', reservations, 'SeatUsages:', seatUsages, 'ClassroomReservations:', classroomReservations);
 
         return json({ reservations, seatUsages, classroomReservations });
     } catch (err) {

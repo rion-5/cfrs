@@ -15,7 +15,6 @@ export const GET: RequestHandler = async ({ url }) => {
     const semesterCode = await getSemesterCode(date);
     if (!semesterCode) {
         // 학기 외 날짜: 빈 스케줄 반환
-        console.log(`No schedules for ${date}: Not in any semester`);
         return json([]);
     }
 
@@ -36,7 +35,6 @@ export const GET: RequestHandler = async ({ url }) => {
         AND semester = $3;
     `;
     const params = [classroomId, date, semesterCode];
-    console.log('Schedules Query:', sql, 'Params:', params);
 
     try {
         const result = await query(sql, params);
@@ -47,7 +45,6 @@ export const GET: RequestHandler = async ({ url }) => {
             end_time: row.end_time,
             semester: row.semester
         }));
-        console.log('Schedules Result:', schedules);
         return json(schedules);
     } catch (error) {
         console.error('Schedules Query Error:', error);

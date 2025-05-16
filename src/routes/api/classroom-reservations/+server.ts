@@ -146,7 +146,6 @@ export async function POST(event) {
         end_time,
         reservation_date
     ];
-    console.log('Insert Query:', insertQuery, 'Params:', insertParams);
     const result = await query(insertQuery, insertParams);
 
     if (result.length === 0) {
@@ -172,7 +171,6 @@ export async function DELETE(event) {
     const user = await requireAuth(event); // 인증 확인
     const reservationId = event.url.searchParams.get('reservation_id');
     const userId = user.id_no;
-    console.log('DELETE:', { reservationId, userId, session: event.locals.session });
 
     if (!reservationId || !userId) {
         return json({ error: '예약 ID와 사용자 ID가 필요합니다.' }, { status: 400 });
@@ -205,7 +203,6 @@ export async function DELETE(event) {
         RETURNING reservation_id;
     `;
     const result = await query(deleteQuery, [reservationId, userId]);
-    console.log('DELETE Result:', result);
 
     if (result.length === 0) {
         return json({ error: '예약을 찾을 수 없거나 취소 권한이 없습니다.' }, { status: 400 });

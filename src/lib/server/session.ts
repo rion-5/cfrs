@@ -45,7 +45,6 @@ export async function verifyJWT(token: string): Promise<Session> {
 export async function getSession(cookies: Cookies): Promise<Session> {
     const token = cookies.get('session_token');
     if (!token) {
-        console.log('getSession: No session_token');
         return { user: null };
     }
     return verifyJWT(token);
@@ -62,7 +61,6 @@ export async function setSession(cookies: Cookies, user: { id_no: string; user_n
             sameSite: 'lax',
             maxAge: 2 * 60 * 60 // 2시간
         });
-        console.log('setSession: JWT set successfully');
     } catch (err) {
         console.error('setSession Error:', err);
         throw new Error('Failed to set session');
@@ -73,18 +71,15 @@ export async function setSession(cookies: Cookies, user: { id_no: string; user_n
 export async function extendSession(cookies: Cookies): Promise<boolean> {
     const token = cookies.get('session_token');
     if (!token) {
-        console.log('extendSession: No session_token');
         return false;
     }
 
     try {
         const session = await verifyJWT(token);
         if (!session.user?.id_no || !session.user?.user_name) {
-            console.log('extendSession: Invalid session data');
             return false;
         }
         await setSession(cookies, session.user);
-        console.log('extendSession: Session extended');
         return true;
     } catch (err) {
         console.error('extendSession Error:', err);
@@ -94,7 +89,6 @@ export async function extendSession(cookies: Cookies): Promise<boolean> {
 
 // 세션 삭제 (로그아웃 시 호출)
 export function clearSession(cookies: Cookies) {
-    console.log('clearSession: Deleting session_token');
     cookies.delete('session_token', {
         path: '/',
         httpOnly: true,

@@ -10,7 +10,6 @@ export async function getSemesterCode(date: string): Promise<string | null> {
         `;
         const result = await query(sql, [date]);
         if (result.length === 0) {
-            console.log(`No semester found for date: ${date}`);
             return null;
         }
         if (result.length > 1) {
