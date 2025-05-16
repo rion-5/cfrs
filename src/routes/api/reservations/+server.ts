@@ -2,19 +2,18 @@
 import { json, error } from '@sveltejs/kit';
 import { query } from '$lib/server/db';
 import type { RequestHandler } from './$types';
+import { requireAuth } from '$lib/server/auth';
 
-export const GET: RequestHandler = async ({ url, locals }) => {
-  // 세션 검증
-  if (!locals.session.user) {
-    throw error(401, '인증되지 않은 사용자입니다.');
-  }
+export const GET: RequestHandler = async (event) => {
+  const user = requireAuth(event);
 
-  const inquery_date = url.searchParams.get('inquery_date');
+  const inquery_date = event.url.searchParams.get('inquery_date');
   if (!inquery_date) {
     throw error(400, '날짜 파라미터가 누락되었습니다.');
   }
 
   try {
+
     const result = await query(
       `SELECT id, room_id, user_id, start_time, end_time
        FROM reservation
@@ -29,22 +28,15 @@ export const GET: RequestHandler = async ({ url, locals }) => {
   }
 };
 
-export const POST: RequestHandler = async ({ request, locals }) => {
-  // 세션 검증
-  if (!locals.session.user) {
-    throw error(401, '인증되지 않은 사용자입니다.');
-  }
+export const POST: RequestHandler = async (event) => {
+  const user = await requireAuth(event);
 
   try {
-    const body = await request.json();
-    const { room_id, user_id, name, email, phone, start_time, end_time } = body;
+    const userId = user.id_no;
+    const body = await event.request.json();
+    const { room_id, name, email, phone, start_time, end_time } = body;
 
-    // user_id 검증
-    if (user_id !== locals.session.user.id_no) {
-      throw error(403, '잘못된 사용자 ID입니다.');
-    }
-
-    if (!room_id || !user_id || !name || !start_time || !end_time) {
+    if (!room_id || !name || !start_time || !end_time) {
       throw error(400, '필수 필드가 누락되었습니다.');
     }
 
@@ -68,7 +60,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
       `SELECT SUM(EXTRACT(EPOCH FROM (end_time - start_time)) / 3600) AS total_hours
        FROM reservation
        WHERE user_id = $1 AND DATE(start_time) = $2`,
-      [locals.session.user.id_no, start_time.split(' ')[0]]
+      [userId, start_time.split(' ')[0]]
     );
     const totalHoursToday = parseFloat(dayLimitCheck[0].total_hours ?? 0);
     if (totalHoursToday + 1 > 2) {
@@ -81,10 +73,10 @@ export const POST: RequestHandler = async ({ request, locals }) => {
        FROM reservation
        WHERE user_id = $1
        AND DATE_TRUNC('month', start_time) = DATE_TRUNC('month', TO_DATE($2, 'YYYY-MM-DD'))`,
-      [locals.session.user.id_no, start_time.split(' ')[0]]
+      [userId, start_time.split(' ')[0]]
     );
     const monthlyHours = Number(monthLimitCheck[0].total_hours ?? 0);
-    if (monthlyHours + 1 > 20) {
+    if (monthlyHours + 1 > 60) {
       throw error(403, '한 달 최대 60시간까지만 예약할 수 있습니다.');
     }
 
@@ -93,7 +85,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
        (room_id, user_id, name, email, phone, start_time, end_time)
        VALUES
        ($1, $2, $3, $4, $5, $6, $7)`,
-      [room_id, locals.session.user.id_no, name, email ?? null, phone ?? null, start_time, end_time]
+      [room_id, userId, name, email ?? null, phone ?? null, start_time, end_time]
     );
 
     // return new Response('예약이 완료되었습니다.', { status: 201 });
@@ -103,29 +95,27 @@ export const POST: RequestHandler = async ({ request, locals }) => {
   }
 };
 
-export const DELETE: RequestHandler = async ({ request, locals }) => {
-  // 세션 검증
-  if (!locals.session.user) {
-    throw error(401, '인증되지 않은 사용자입니다.');
-  }
+export const DELETE: RequestHandler = async (event) => {
+  const user = await requireAuth(event);
 
   try {
-    const body = await request.json();
-    const { id, user_id } = body;
+    const userId = user.id_no;
+    const body = await event.request.json();
+    const { id } = body;
 
-    // user_id 검증
-    if (user_id !== locals.session.user.id_no) {
-      throw error(403, '잘못된 사용자 ID입니다.');
-    }
+    // // user_id 검증
+    // if (user_id !== locals.session.user.id_no) {
+    //   throw error(403, '잘못된 사용자 ID입니다.');
+    // }
 
-    if (!id || !user_id) {
+    if (!id || !userId) {
       throw error(400, '필수 필드가 누락되었습니다.');
     }
 
     // 본인 예약인지 확인
     const check = await query(
       `SELECT 1 FROM reservation WHERE id = $1 AND user_id = $2`,
-      [id, locals.session.user.id_no]
+      [id, userId]
     );
     if (check.length === 0) {
       throw error(403, '예약을 찾을 수 없거나 권한이 없습니다.');

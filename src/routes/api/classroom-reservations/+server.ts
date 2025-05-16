@@ -4,6 +4,7 @@ import { query } from '$lib/server/db';
 import { toKSTDateString } from '$lib/utils/date';
 import { getSemesterCode } from '$lib/utils/semester';
 import type { ClassroomReservation } from '$lib/types';
+import { requireAuth } from '$lib/server/auth';
 
 export async function GET({ url }) {
     const date = url.searchParams.get('date');
@@ -60,34 +61,20 @@ export async function GET({ url }) {
     return json(reservations);
 }
 
-export async function POST({ request, locals }) {
-    if (!locals.session?.user?.id_no) {
-        return json({ error: '인증되지 않은 사용자입니다.' }, { status: 401 });
+export async function POST(event) {
+    const user = await requireAuth(event); // 인증 확인
+
+    const { classroom_id, purpose, email, tel, attendees, day_of_week, start_time, end_time, reservation_date } = await event.request.json();
+
+    // 입력 검증
+    if (!classroom_id || !purpose || !attendees || !day_of_week || !start_time || !end_time || !reservation_date) {
+        return json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const data = await request.json();
-    const {
-        classroom_id,
-        user_id,
-        purpose,
-        attendees,
-        email,
-        tel,
-        start_time,
-        end_time,
-        reservation_date,
-        day_of_week
-    } = data;
-
-    // 필수 필드 검증
-    if (!classroom_id || !user_id || !purpose || !attendees || !start_time || !end_time || !reservation_date || !day_of_week) {
-        return json({ error: '필수 입력값이 누락되었습니다: classroom_id, user_id, purpose, attendees, start_time, end_time, reservation_date, day_of_week' }, { status: 400 });
-    }
-
-    // 사용자 인증 검증
-    if (user_id !== locals.session.user.id_no) {
-        return json({ error: '사용자 ID가 일치하지 않습니다.' }, { status: 403 });
-    }
+    // // 사용자 인증 검증
+    // if (user_id !== locals.session.user.id_no) {
+    //     return json({ error: '사용자 ID가 일치하지 않습니다.' }, { status: 403 });
+    // }
 
     // 강의실 수용 인원 검증
     const capacityQuery = `SELECT capacity FROM classrooms WHERE classroom_id = $1`;
@@ -139,7 +126,7 @@ export async function POST({ request, locals }) {
     if (conflictResult.length > 0) {
         return json({ error: '선택한 시간대에 이미 예약 또는 수업이 있습니다.' }, { status: 400 });
     }
-
+    const user_id = user.id_no;
     // 예약 삽입
     const insertQuery = `
         INSERT INTO classroom_reservations (
@@ -177,10 +164,15 @@ export async function POST({ request, locals }) {
     return json(result[0]);
 }
 
-export async function DELETE({ url, locals }) {
-    const reservationId = url.searchParams.get('reservation_id');
-    const userId = locals.session?.user?.id_no;
-    console.log('DELETE:', { reservationId, userId, session: locals.session });
+export async function DELETE(event) {
+    // // JWT 인증 확인
+    // if (!locals.session?.user) {
+    //     return json({ error: 'Unauthorized: Login required' }, { status: 401 });
+    // }
+    const user = await requireAuth(event); // 인증 확인
+    const reservationId = event.url.searchParams.get('reservation_id');
+    const userId = user.id_no;
+    console.log('DELETE:', { reservationId, userId, session: event.locals.session });
 
     if (!reservationId || !userId) {
         return json({ error: '예약 ID와 사용자 ID가 필요합니다.' }, { status: 400 });

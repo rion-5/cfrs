@@ -3,19 +3,18 @@ import { json, error } from '@sveltejs/kit';
 import { query } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 import { getTodayKST } from '$lib/utils/date';
+import { requireAuth } from '$lib/server/auth';
 
-export const GET: RequestHandler = async ({ locals }) => {
-    // 세션 검증
-    if (!locals.session.user) {
-        throw error(401, '인증되지 않은 사용자입니다.');
-    }
+export const GET: RequestHandler = async (event) => {
+    const user = await requireAuth(event); // 인증 확인 
 
     try {
+        const userId = user.id_no;
         // 현재 사용 중인 좌석 조회 (end_time IS NULL)
         const result = await query(
             `SELECT seat_number, user_id
-       FROM reading_seats
-       WHERE end_time IS NULL`,
+            FROM reading_seats
+            WHERE end_time IS NULL`,
             []
         );
 
@@ -30,7 +29,7 @@ export const GET: RequestHandler = async ({ locals }) => {
             `SELECT seat_number
          FROM reading_seats
          WHERE user_id = $1 AND end_time IS NULL`,
-            [locals.session.user.id_no]
+            [userId]
         );
         if (mySeatResult.length > 0) {
             mySeat = parseInt(mySeatResult[0].seat_number);
@@ -46,14 +45,12 @@ export const GET: RequestHandler = async ({ locals }) => {
     }
 };
 
-export const POST: RequestHandler = async ({ request, locals }) => {
-    // 세션 검증
-    if (!locals.session.user) {
-        throw error(401, '인증되지 않은 사용자입니다.');
-    }
+export const POST: RequestHandler = async (event) => {
+    const user = await requireAuth(event); // 인증 확인 
 
     try {
-        const body = await request.json();
+        const userId = user.id_no;
+        const body = await event.request.json();
         const { seat, name } = body;
 
         if (!seat  || !name) {
@@ -74,7 +71,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         // 사용자가 이미 다른 좌석을 사용 중인지 확인
         const userSeatCheck = await query(
             `SELECT 1 FROM reading_seats WHERE user_id = $1 AND end_time IS NULL`,
-            [locals.session.user.id_no]
+            [userId]
         );
         if (userSeatCheck.length > 0) {
             // return new Response('이미 다른 좌석을 사용 중입니다.', { status: 403 });
@@ -92,7 +89,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
               SUM(EXTRACT(EPOCH FROM (COALESCE(end_time, CURRENT_TIMESTAMP) - start_time)) / 3600) AS total_hours
        FROM reading_seats
        WHERE user_id = $1 AND DATE(start_time) = $2`,
-            [locals.session.user.id_no, today]
+            [userId, today]
         );
         const usageCount = parseInt(usageCheck[0].usage_count, 10);
         const totalHours = parseFloat(usageCheck[0].total_hours || '0');
@@ -110,7 +107,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         await query(
             `INSERT INTO reading_seats (seat_number, user_id, user_name, start_time)
        VALUES ($1, $2, $3, CURRENT_TIMESTAMP)`,
-            [seat, locals.session.user.id_no, name]
+            [seat, userId, name]
         );
 
         // return new Response('좌석이 예약되었습니다.', { status: 201 });
@@ -124,13 +121,11 @@ export const POST: RequestHandler = async ({ request, locals }) => {
     }
 };
 
-export const DELETE: RequestHandler = async ({ request, locals }) => {
-    // 세션 검증
-    if (!locals.session.user) {
-        throw error(401, '인증되지 않은 사용자입니다.');
-    }
+export const DELETE: RequestHandler = async (event) => {
+    const user = await requireAuth(event); // 인증 확인 
     try {
-        const body = await request.json();
+        const userId = user.id_no;
+        const body = await event.request.json();
         const { seat } = body;
 
         if (!seat ) {
@@ -141,7 +136,7 @@ export const DELETE: RequestHandler = async ({ request, locals }) => {
         // 본인 좌석인지 확인
         const check = await query(
             `SELECT 1 FROM reading_seats WHERE seat_number = $1 AND user_id = $2 AND end_time IS NULL`,
-            [seat, locals.session.user.id_no]
+            [seat, userId]
         );
         if (check.length === 0) {
             // return new Response('이용 중인 좌석을 찾을 수 없거나 권한이 없습니다.', { status: 403 });
@@ -152,7 +147,7 @@ export const DELETE: RequestHandler = async ({ request, locals }) => {
         await query(
             `UPDATE reading_seats SET end_time = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
        WHERE seat_number = $1 AND user_id = $2 AND end_time IS NULL`,
-            [seat, locals.session.user.id_no]
+            [seat, userId]
         );
 
         // return new Response(null, { status: 204 });

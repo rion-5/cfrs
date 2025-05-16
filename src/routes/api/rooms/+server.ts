@@ -5,12 +5,7 @@ import { json, error } from '@sveltejs/kit';
 import { query } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
-export const GET: RequestHandler = async ({ url, locals }) => {
-    // 세션 검증
-    if (!locals.session.user) {
-        throw error(401, '인증되지 않은 사용자입니다.');
-    }
-
+export const GET: RequestHandler = async ({ url }) => {
     const type = url.searchParams.get('type');
 
     if (!type) {
