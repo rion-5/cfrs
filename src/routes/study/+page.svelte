@@ -184,7 +184,7 @@
 		<div class="mb-4 flex flex-wrap justify-center gap-2">
 			{#each dates as d}
 				<button
-					class="rounded-md border-2 px-3 py-1 text-sm font-semibold
+					class="rounded-md border-1 px-2 py-1 text-sm font-semibold
 						{d === date ? 'border-blue-500 bg-blue-100' : 'border-transparent bg-gray-100'}"
 					on:click={() => {
 						date = d;
@@ -198,11 +198,11 @@
 		</div>
 
 		<!-- 색상 안내 -->
-		<div class="mb-4 text-sm text-gray-600">
-			<span class="mr-1 inline-block h-4 w-4 bg-white border border-gray-300"></span> 예약가능
-			<span class="mr-1 ml-4 inline-block h-4 w-4 bg-indigo-500"></span> 내 예약
-			<span class="mr-1 ml-4 inline-block h-4 w-4 bg-gray-300"></span> 타인예약
-			<span class="mr-1 ml-4 inline-block h-4 w-4 bg-gray-400"></span> 예약불가
+		<div class="mb-4 text-xs text-gray-600">
+			<span class="mr-1 inline-block h-3 w-3 bg-white border border-gray-300"></span> 예약가능
+			<span class="mr-1 ml-4 inline-block h-3 w-3 bg-indigo-500"></span> 내예약
+			<span class="mr-1 ml-4 inline-block h-3 w-3 bg-gray-300"></span> 타예약
+			<span class="mr-1 ml-4 inline-block h-3 w-3 bg-gray-400"></span> 예약불가
 		</div>
 
 		<!-- 각 방별 시간 예약 버튼 -->

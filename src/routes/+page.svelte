@@ -98,7 +98,7 @@
 		if ('reservation_date' in item) {
 			switch (item.status) {
 				case 'pending':
-					return '대기중';
+					return '승인대기';
 				case 'approved':
 					return '승인';
 				case 'rejected':
@@ -325,7 +325,7 @@ async function handleCancelReservation(reservationId: number) {
 						>
 							<div
 								class="min-w-[56px] rounded px-2 py-1 text-center text-xs font-semibold text-white"
-								class:bg-blue-500={getStatus(cr) === '대기중'}
+								class:bg-blue-500={getStatus(cr) === '승인대기'}
 								class:bg-green-500={getStatus(cr) === '승인'}
 								class:bg-red-500={getStatus(cr) === '거절'}
 							>
@@ -338,7 +338,7 @@ async function handleCancelReservation(reservationId: number) {
 								</div>
 							</div>
 							<div class="flex items-center space-x-1">
-								{#if getStatus(cr) === '대기중' || getStatus(cr) === '승인'}
+								{#if getStatus(cr) === '승인대기' || getStatus(cr) === '승인'}
 									<button
 										class="rounded border border-red-300 px-2 py-1 text-xs text-red-500 hover:bg-red-100"
 										on:click={() => handleCancelClassRoomReservation(cr.reservation_id)}

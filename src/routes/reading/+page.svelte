@@ -143,10 +143,10 @@
 	{:else}
 		<h1 class="text-center text-2xl font-bold">도담 📖열람실 이용 등록</h1>
 		<!-- 색상 안내 -->
-		<div class="mt-4 text-sm text-gray-600">
-			<span class="inline-block h-4 w-4 bg-white border border-gray-300 mr-1"></span> 사용 가능
-			<span class="inline-block h-4 w-4 bg-indigo-500 mr-1 ml-4"></span> 내 좌석
-			<span class="inline-block h-4 w-4 bg-gray-400 mr-1 ml-4"></span> 사용 중
+		<div class="mt-4 text-xs text-gray-600">
+			<span class="inline-block h-3 w-3 bg-white border border-gray-300 mr-1"></span> 사용가능
+			<span class="inline-block h-3 w-3 bg-indigo-500 mr-1 ml-4"></span> 내좌석
+			<span class="inline-block h-3 w-3 bg-gray-400 mr-1 ml-4"></span> 사용중
 		</div>
 		<!-- Seat Map Layout -->
 		<div class="flex justify-center">
