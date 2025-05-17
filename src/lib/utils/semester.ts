@@ -1,3 +1,5 @@
+// src/lib/utils/semester.ts
+
 import { query } from '$lib/server/db';
 
 // 날짜에 해당하는 semester_code 조회
